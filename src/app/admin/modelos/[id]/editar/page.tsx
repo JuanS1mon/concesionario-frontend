@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Modelo, Marca } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function EditarModelo() {
   const [nombre, setNombre] = useState('');
@@ -45,7 +46,7 @@ export default function EditarModelo() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas`, { headers });
+      const response = await fetch(`${API_BASE_URL}/marcas/`, { headers });
       if (response.ok) {
         const data = await response.json();
         setMarcas(data);
@@ -63,7 +64,7 @@ export default function EditarModelo() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos/${id}`, { headers });
+      const response = await fetch(`${API_BASE_URL}/modelos/${id}/`, { headers });
       if (response.ok) {
         const modelo: Modelo = await response.json();
         setNombre(modelo.nombre);
@@ -92,7 +93,7 @@ export default function EditarModelo() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/modelos/${id}/`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({

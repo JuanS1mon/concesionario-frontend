@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Marca, Modelo, Estado, Auto } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 console.log('📄 Archivo page.tsx cargado correctamente');
 
@@ -60,9 +61,9 @@ export default function EditarAuto() {
 
       console.log('📡 Haciendo llamadas a la API...');
       const [marcasRes, estadosRes, cloudinaryRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/configuracion-cloudinary`, { headers }).catch(() => null),
+        fetch(`${API_BASE_URL}/marcas/`, { headers }),
+        fetch(`${API_BASE_URL}/estados/`, { headers }),
+        fetch(`${API_BASE_URL}/configuracion-cloudinary/`, { headers }).catch(() => null),
       ]);
 
       console.log('✅ Respuestas recibidas:', {
@@ -109,7 +110,7 @@ export default function EditarAuto() {
       }
 
       console.log('📡 Consultando auto en la API...');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/autos/${autoId}`, { headers });
+      const response = await fetch(`${API_BASE_URL}/autos/${autoId}/`, { headers });
       console.log('📡 Respuesta del servidor:', response.status);
 
       if (response.ok) {
@@ -119,7 +120,7 @@ export default function EditarAuto() {
         // Cargar modelos de la marca
         if (auto.marca_id) {
           console.log('📊 Cargando modelos para marca:', auto.marca_id);
-          const modelosRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos/marca/${auto.marca_id}`, { headers });
+          const modelosRes = await fetch(`${API_BASE_URL}/modelos/marca/${auto.marca_id}/`, { headers });
           if (modelosRes.ok) {
             const modelosData = await modelosRes.json();
             console.log('📊 Modelos cargados:', modelosData.length);
@@ -129,7 +130,7 @@ export default function EditarAuto() {
 
         // Cargar imágenes existentes
         console.log('🖼️ Cargando imágenes del auto...');
-        const imagesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/imagenes/auto/${autoId}`, { headers });
+        const imagesRes = await fetch(`${API_BASE_URL}/imagenes/auto/${autoId}/`, { headers });
         if (imagesRes.ok) {
           const imagesData = await imagesRes.json();
           console.log('🖼️ Imágenes cargadas:', imagesData.length);
@@ -191,7 +192,7 @@ export default function EditarAuto() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos`, { headers });
+      const response = await fetch(`${API_BASE_URL}/modelos/`, { headers });
       if (response.ok) {
         const modelosData = await response.json();
         const modelosFiltrados = modelosData.filter((modelo: any) => modelo.marca_id === parseInt(marcaId));
@@ -236,7 +237,7 @@ export default function EditarAuto() {
 
     for (const imageId of imagesToDelete) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/imagenes/${imageId}`, {
+        await fetch(`${API_BASE_URL}/imagenes/${imageId}/`, {
           method: 'DELETE',
           headers,
         });
@@ -277,7 +278,7 @@ export default function EditarAuto() {
             headers.Authorization = `Bearer ${token}`;
           }
 
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/imagenes`, {
+          await fetch(`${API_BASE_URL}/imagenes/`, {
             method: 'POST',
             headers,
             body: JSON.stringify({
@@ -328,7 +329,7 @@ export default function EditarAuto() {
         en_stock: formData.en_stock,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/autos/${autoId}`, {
+      const response = await fetch(`${API_BASE_URL}/autos/${autoId}/`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(autoData),

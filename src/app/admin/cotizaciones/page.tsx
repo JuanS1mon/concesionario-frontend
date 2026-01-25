@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Cotizacion } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function AdminCotizaciones() {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
@@ -31,7 +32,7 @@ export default function AdminCotizaciones() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cotizaciones`, { headers });
+      const response = await fetch(`${API_BASE_URL}/cotizaciones/`, { headers });
       if (response.ok) {
         const data = await response.json();
         setCotizaciones(data);

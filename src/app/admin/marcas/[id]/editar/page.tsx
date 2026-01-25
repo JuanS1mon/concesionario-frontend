@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Marca } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function EditarMarca() {
   const [nombre, setNombre] = useState('');
@@ -42,7 +43,7 @@ export default function EditarMarca() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas/${id}`, { headers });
+      const response = await fetch(`${API_BASE_URL}/marcas/${id}/`, { headers });
       if (response.ok) {
         const marca: Marca = await response.json();
         setNombre(marca.nombre);
@@ -70,7 +71,7 @@ export default function EditarMarca() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/marcas/${id}/`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ nombre }),

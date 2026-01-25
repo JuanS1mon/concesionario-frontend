@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Modelo, Marca } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function AdminModelos() {
   const [modelos, setModelos] = useState<Modelo[]>([]);
@@ -33,8 +34,8 @@ export default function AdminModelos() {
       }
 
       const [modelosRes, marcasRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas`, { headers }),
+        fetch(`${API_BASE_URL}/modelos/`, { headers }),
+        fetch(`${API_BASE_URL}/marcas/`, { headers }),
       ]);
 
       if (modelosRes.ok) {
@@ -65,7 +66,7 @@ export default function AdminModelos() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/modelos/${id}/`, {
         method: 'DELETE',
         headers,
       });

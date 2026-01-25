@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Marca } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function AdminMarcas() {
   const [marcas, setMarcas] = useState<Marca[]>([]);
@@ -31,7 +32,7 @@ export default function AdminMarcas() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas`, { headers });
+      const response = await fetch(`${API_BASE_URL}/marcas/`, { headers });
       if (response.ok) {
         const data = await response.json();
         setMarcas(data);
@@ -57,7 +58,7 @@ export default function AdminMarcas() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/marcas/${id}/`, {
         method: 'DELETE',
         headers,
       });

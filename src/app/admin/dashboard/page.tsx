@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/constants';
 
 interface DashboardStats {
   autos: number;
@@ -38,11 +39,11 @@ export default function AdminDashboard() {
       }
 
       const [autosRes, marcasRes, modelosRes, estadosRes, cotizacionesRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/autos`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/cotizaciones`, { headers }),
+        fetch(`${API_BASE_URL}/autos/`, { headers }),
+        fetch(`${API_BASE_URL}/marcas/`, { headers }),
+        fetch(`${API_BASE_URL}/modelos/`, { headers }),
+        fetch(`${API_BASE_URL}/estados/`, { headers }),
+        fetch(`${API_BASE_URL}/cotizaciones/`, { headers }),
       ]);
 
       const autos = await autosRes.json();
@@ -122,8 +123,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <dt className="text-sm font-medium text-gray-500 truncate">Autos</dt>
-                <dd className="text-3xl font-bold text-gray-900">{stats?.autos || 0}</dd>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Autos</dt>
+                  <dd className="text-3xl font-bold text-gray-900">{stats?.autos || 0}</dd>
+                </dl>
               </div>
             </div>
           </div>
@@ -138,8 +141,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <dt className="text-sm font-medium text-gray-500 truncate">Marcas</dt>
-                <dd className="text-3xl font-bold text-gray-900">{stats?.marcas || 0}</dd>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Marcas</dt>
+                  <dd className="text-3xl font-bold text-gray-900">{stats?.marcas || 0}</dd>
+                </dl>
               </div>
             </div>
           </div>
@@ -154,8 +159,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <dt className="text-sm font-medium text-gray-500 truncate">Modelos</dt>
-                <dd className="text-3xl font-bold text-gray-900">{stats?.modelos || 0}</dd>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Modelos</dt>
+                  <dd className="text-3xl font-bold text-gray-900">{stats?.modelos || 0}</dd>
+                </dl>
               </div>
             </div>
           </div>
@@ -170,8 +177,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <dt className="text-sm font-medium text-gray-500 truncate">Estados</dt>
-                <dd className="text-3xl font-bold text-gray-900">{stats?.estados || 0}</dd>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Estados</dt>
+                  <dd className="text-3xl font-bold text-gray-900">{stats?.estados || 0}</dd>
+                </dl>
               </div>
             </div>
           </div>
@@ -186,8 +195,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <dt className="text-sm font-medium text-gray-500 truncate">Cotizaciones</dt>
-                <dd className="text-3xl font-bold text-gray-900">{stats?.cotizaciones || 0}</dd>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Cotizaciones</dt>
+                  <dd className="text-3xl font-bold text-gray-900">{stats?.cotizaciones || 0}</dd>
+                </dl>
               </div>
             </div>
           </div>

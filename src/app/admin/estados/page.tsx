@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Estado } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function AdminEstados() {
   const [estados, setEstados] = useState<Estado[]>([]);
@@ -31,7 +32,7 @@ export default function AdminEstados() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados`, { headers });
+      const response = await fetch(`${API_BASE_URL}/estados/`, { headers });
       if (response.ok) {
         const data = await response.json();
         setEstados(data);
@@ -57,7 +58,7 @@ export default function AdminEstados() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/estados/${id}/`, {
         method: 'DELETE',
         headers,
       });

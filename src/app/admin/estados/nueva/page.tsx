@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function NuevoEstado() {
   const [nombre, setNombre] = useState('');
@@ -43,7 +44,7 @@ export default function NuevoEstado() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados`, {
+      const response = await fetch(`${API_BASE_URL}/estados/`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ nombre }),
