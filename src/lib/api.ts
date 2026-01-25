@@ -3,6 +3,7 @@ import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, Sol
 
 // Configuración de la API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
+console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
 console.log('API_BASE_URL:', API_BASE_URL);
 
 export const api = axios.create({
