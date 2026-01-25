@@ -50,5 +50,5 @@ next-env.d.ts
 .DS_Store
 Thumbs.db
 
-# Railway
-railway.json
+# Railway deployment files (except config)
+# railway.json should be committed for deployment
