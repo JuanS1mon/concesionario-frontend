@@ -1,6 +1,7 @@
 {
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "NIXPACKS",
+    "buildCommand": "npm run build"
   },
   "deploy": {
     "startCommand": "npm run start",
@@ -8,14 +9,5 @@
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
-  },
-  "nixpacks": {
-    "plan": {
-      "phases": {
-        "install": {
-          "nixPkgs": ["nodejs-20_x", "npm-10_x"]
-        }
-      }
-    }
   }
 }
