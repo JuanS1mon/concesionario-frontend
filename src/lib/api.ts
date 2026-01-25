@@ -2,8 +2,7 @@ import axios from 'axios';
 import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta } from '@/types';
 
 // Configuración de la API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
-console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+const API_BASE_URL = 'https://concesionario-backend-production.up.railway.app';
 console.log('API_BASE_URL:', API_BASE_URL);
 
 export const api = axios.create({
