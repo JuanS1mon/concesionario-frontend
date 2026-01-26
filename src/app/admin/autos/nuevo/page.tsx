@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Marca, Modelo, Estado } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function NuevoAuto() {
   const [formData, setFormData] = useState({
@@ -54,9 +55,9 @@ export default function NuevoAuto() {
       }
 
       const [marcasRes, estadosRes, cloudinaryRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/marcas`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/configuracion-cloudinary`, { headers }).catch(() => null),
+        fetch(`${API_BASE_URL}/marcas/`, { headers }),
+        fetch(`${API_BASE_URL}/estados/`, { headers }),
+        fetch(`${API_BASE_URL}/configuracion-cloudinary/`, { headers }).catch(() => null),
       ]);
 
       if (marcasRes.ok) {
@@ -86,7 +87,7 @@ export default function NuevoAuto() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modelos`, { headers });
+      const response = await fetch(`${API_BASE_URL}/modelos/`, { headers });
       if (response.ok) {
         const modelosData = await response.json();
         const modelosFiltrados = modelosData.filter((modelo: Modelo) => modelo.marca_id === parseInt(marcaId));
@@ -142,7 +143,7 @@ export default function NuevoAuto() {
             headers.Authorization = `Bearer ${token}`;
           }
 
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/imagenes`, {
+          await fetch(`${API_BASE_URL}/imagenes/`, {
             method: 'POST',
             headers,
             body: JSON.stringify({
@@ -183,7 +184,7 @@ export default function NuevoAuto() {
         precio: parseFloat(formData.precio),
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/autos`, {
+      const response = await fetch(`${API_BASE_URL}/autos/`, {
         method: 'POST',
         headers,
         body: JSON.stringify(autoData),

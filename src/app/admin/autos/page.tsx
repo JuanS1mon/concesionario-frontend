@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Auto } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 export default function AdminAutos() {
   const [autos, setAutos] = useState<Auto[]>([]);
@@ -31,7 +32,7 @@ export default function AdminAutos() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/autos`, { headers });
+      const response = await fetch(`${API_BASE_URL}/autos/`, { headers });
       if (response.ok) {
         const data = await response.json();
         setAutos(data);
@@ -57,7 +58,7 @@ export default function AdminAutos() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/autos/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/autos/${id}/`, {
         method: 'DELETE',
         headers,
       });
