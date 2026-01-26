@@ -33,10 +33,13 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Token:', token ? 'present' : 'not present');
       const headers: Record<string, string> = {};
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
+
+      console.log('Fetching stats from API_BASE_URL:', API_BASE_URL);
 
       const [autosRes, marcasRes, modelosRes, estadosRes, cotizacionesRes] = await Promise.all([
         fetch(`${API_BASE_URL}/autos/`, { headers }),
@@ -45,6 +48,14 @@ export default function AdminDashboard() {
         fetch(`${API_BASE_URL}/estados/`, { headers }),
         fetch(`${API_BASE_URL}/cotizaciones/`, { headers }),
       ]);
+
+      console.log('Response statuses:', {
+        autos: autosRes.status,
+        marcas: marcasRes.status,
+        modelos: modelosRes.status,
+        estados: estadosRes.status,
+        cotizaciones: cotizacionesRes.status,
+      });
 
       const autos = await autosRes.json();
       const marcas = await marcasRes.json();
@@ -61,6 +72,11 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error('Error loading stats:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
     } finally {
       setLoading(false);
     }
