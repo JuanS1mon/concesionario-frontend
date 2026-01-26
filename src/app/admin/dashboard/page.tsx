@@ -72,11 +72,12 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error('Error loading stats:', error);
-      console.error('Error details:', {
+      const errorDetails = error instanceof Error ? {
         message: error.message,
         stack: error.stack,
         name: error.name
-      });
+      } : { message: String(error) };
+      console.error('Error details:', errorDetails);
     } finally {
       setLoading(false);
     }
