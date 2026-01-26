@@ -78,5 +78,5 @@ export const solicitudesVentaAPI = {
 
 // Funciones de API para autenticación
 export const authAPI = {
-  login: (data: { email: string; password: string }) => api.post('/auth/login/', data),
+  login: (data: { email: string; password: string }) => api.post('/auth/login', data),
 };
