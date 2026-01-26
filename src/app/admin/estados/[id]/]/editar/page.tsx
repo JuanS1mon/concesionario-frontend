@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/constants';
 import { Estado } from '@/types';
 
 export default function EditarEstado() {
@@ -42,7 +43,7 @@ export default function EditarEstado() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados/${id}`, { headers });
+      const response = await fetch(`${API_BASE_URL}/estados/${id}`, { headers });
       if (response.ok) {
         const estado: Estado = await response.json();
         setNombre(estado.nombre);
@@ -70,7 +71,7 @@ export default function EditarEstado() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/estados/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/estados/${id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ nombre }),
