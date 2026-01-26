@@ -26,13 +26,7 @@ export default function AdminCotizaciones() {
 
   const loadCotizaciones = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/cotizaciones/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/cotizaciones/`);
       if (response.ok) {
         const data = await response.json();
         setCotizaciones(data);

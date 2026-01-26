@@ -27,15 +27,9 @@ export default function AdminModelos() {
 
   const loadModelos = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
       const [modelosRes, marcasRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/modelos/`, { headers }),
-        fetch(`${API_BASE_URL}/marcas/`, { headers }),
+        fetch(`${API_BASE_URL}/modelos/`),
+        fetch(`${API_BASE_URL}/marcas/`),
       ]);
 
       if (modelosRes.ok) {

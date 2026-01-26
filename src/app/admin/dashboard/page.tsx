@@ -32,21 +32,15 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      console.log('Token:', token ? 'present' : 'not present');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
 
       console.log('Fetching stats from API_BASE_URL:', API_BASE_URL);
 
       const [autosRes, marcasRes, modelosRes, estadosRes, cotizacionesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/autos`, { headers }),
-        fetch(`${API_BASE_URL}/marcas`, { headers }),
-        fetch(`${API_BASE_URL}/modelos`, { headers }),
-        fetch(`${API_BASE_URL}/estados/`, { headers }),
-        fetch(`${API_BASE_URL}/cotizaciones/`, { headers }),
+        fetch(`${API_BASE_URL}/autos`),
+        fetch(`${API_BASE_URL}/marcas`),
+        fetch(`${API_BASE_URL}/modelos`),
+        fetch(`${API_BASE_URL}/estados/`),
+        fetch(`${API_BASE_URL}/cotizaciones/`),
       ]);
 
       console.log('Response statuses:', {
@@ -129,7 +123,7 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
         {/* Stats Cards Premium */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-12">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 mb-12">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div className="flex items-center">
               <div className="flex-shrink-0">

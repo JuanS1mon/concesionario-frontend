@@ -26,13 +26,7 @@ export default function AdminAutos() {
 
   const loadAutos = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/autos`, { headers });
+      const response = await fetch(`${API_BASE_URL}/autos`);
       if (response.ok) {
         const data = await response.json();
         setAutos(data);

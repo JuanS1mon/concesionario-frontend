@@ -52,13 +52,7 @@ export default function ConfiguracionCloudinary() {
   const loadConfiguracion = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/configuracion-cloudinary`, { headers });
+      const response = await fetch(`${API_BASE_URL}/configuracion-cloudinary`);
       if (response.ok) {
         const data = await response.json();
         setConfiguracion(data);

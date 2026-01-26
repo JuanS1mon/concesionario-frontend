@@ -26,13 +26,7 @@ export default function AdminMarcas() {
 
   const loadMarcas = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/marcas/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/marcas/`);
       if (response.ok) {
         const data = await response.json();
         setMarcas(data);

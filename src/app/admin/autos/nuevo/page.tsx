@@ -48,16 +48,10 @@ export default function NuevoAuto() {
 
   const loadData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
       const [marcasRes, estadosRes, cloudinaryRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/marcas/`, { headers }),
-        fetch(`${API_BASE_URL}/estados/`, { headers }),
-        fetch(`${API_BASE_URL}/configuracion-cloudinary`, { headers }).catch(() => null),
+        fetch(`${API_BASE_URL}/marcas/`),
+        fetch(`${API_BASE_URL}/estados/`),
+        fetch(`${API_BASE_URL}/configuracion-cloudinary`).catch(() => null),
       ]);
 
       if (marcasRes.ok) {
@@ -81,13 +75,7 @@ export default function NuevoAuto() {
 
   const loadModelos = async (marcaId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/modelos/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/modelos/`);
       if (response.ok) {
         const modelosData = await response.json();
         const modelosFiltrados = modelosData.filter((modelo: Modelo) => modelo.marca_id === parseInt(marcaId));
