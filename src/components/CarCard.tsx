@@ -9,7 +9,7 @@ interface CarCardProps {
 }
 
 export default function CarCard({ auto, onClick }: CarCardProps) {
-  const imagenPrincipal = auto.imagenes?.[0]?.url || '/placeholder-car.jpg';
+  const imagenPrincipal = auto.imagenes?.[0]?.url || 'https://via.placeholder.com/400x300?text=No+Image';
 
   return (
     <div
