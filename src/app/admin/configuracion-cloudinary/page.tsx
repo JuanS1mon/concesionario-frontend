@@ -58,7 +58,7 @@ export default function ConfiguracionCloudinary() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/configuracion-cloudinary/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/configuracion-cloudinary`, { headers });
       if (response.ok) {
         const data = await response.json();
         setConfiguracion(data);
@@ -105,7 +105,7 @@ export default function ConfiguracionCloudinary() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/configuracion-cloudinary/`, {
+      const response = await fetch(`${API_BASE_URL}/configuracion-cloudinary`, {
         method: 'POST',
         headers,
         body: JSON.stringify(formData),

@@ -42,9 +42,9 @@ export default function AdminDashboard() {
       console.log('Fetching stats from API_BASE_URL:', API_BASE_URL);
 
       const [autosRes, marcasRes, modelosRes, estadosRes, cotizacionesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/autos/`, { headers }),
-        fetch(`${API_BASE_URL}/marcas/`, { headers }),
-        fetch(`${API_BASE_URL}/modelos/`, { headers }),
+        fetch(`${API_BASE_URL}/autos`, { headers }),
+        fetch(`${API_BASE_URL}/marcas`, { headers }),
+        fetch(`${API_BASE_URL}/modelos`, { headers }),
         fetch(`${API_BASE_URL}/estados/`, { headers }),
         fetch(`${API_BASE_URL}/cotizaciones/`, { headers }),
       ]);

@@ -57,7 +57,7 @@ export default function NuevoAuto() {
       const [marcasRes, estadosRes, cloudinaryRes] = await Promise.all([
         fetch(`${API_BASE_URL}/marcas/`, { headers }),
         fetch(`${API_BASE_URL}/estados/`, { headers }),
-        fetch(`${API_BASE_URL}/configuracion-cloudinary/`, { headers }).catch(() => null),
+        fetch(`${API_BASE_URL}/configuracion-cloudinary`, { headers }).catch(() => null),
       ]);
 
       if (marcasRes.ok) {
@@ -184,7 +184,7 @@ export default function NuevoAuto() {
         precio: parseFloat(formData.precio),
       };
 
-      const response = await fetch(`${API_BASE_URL}/autos/`, {
+      const response = await fetch(`${API_BASE_URL}/autos`, {
         method: 'POST',
         headers,
         body: JSON.stringify(autoData),

@@ -63,7 +63,7 @@ export default function EditarAuto() {
       const [marcasRes, estadosRes, cloudinaryRes] = await Promise.all([
         fetch(`${API_BASE_URL}/marcas/`, { headers }),
         fetch(`${API_BASE_URL}/estados/`, { headers }),
-        fetch(`${API_BASE_URL}/configuracion-cloudinary/`, { headers }).catch(() => null),
+        fetch(`${API_BASE_URL}/configuracion-cloudinary`, { headers }).catch(() => null),
       ]);
 
       console.log('✅ Respuestas recibidas:', {
@@ -110,7 +110,7 @@ export default function EditarAuto() {
       }
 
       console.log('📡 Consultando auto en la API...');
-      const response = await fetch(`${API_BASE_URL}/autos/${autoId}/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/autos/${autoId}`, { headers });
       console.log('📡 Respuesta del servidor:', response.status);
 
       if (response.ok) {
@@ -192,7 +192,7 @@ export default function EditarAuto() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/modelos/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/modelos`, { headers });
       if (response.ok) {
         const modelosData = await response.json();
         const modelosFiltrados = modelosData.filter((modelo: any) => modelo.marca_id === parseInt(marcaId));
@@ -237,7 +237,7 @@ export default function EditarAuto() {
 
     for (const imageId of imagesToDelete) {
       try {
-        await fetch(`${API_BASE_URL}/imagenes/${imageId}/`, {
+        await fetch(`${API_BASE_URL}/imagenes/${imageId}`, {
           method: 'DELETE',
           headers,
         });
@@ -278,7 +278,7 @@ export default function EditarAuto() {
             headers.Authorization = `Bearer ${token}`;
           }
 
-          await fetch(`${API_BASE_URL}/imagenes/`, {
+          await fetch(`${API_BASE_URL}/imagenes`, {
             method: 'POST',
             headers,
             body: JSON.stringify({
@@ -329,7 +329,7 @@ export default function EditarAuto() {
         en_stock: formData.en_stock,
       };
 
-      const response = await fetch(`${API_BASE_URL}/autos/${autoId}/`, {
+      const response = await fetch(`${API_BASE_URL}/autos/${autoId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(autoData),

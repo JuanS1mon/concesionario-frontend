@@ -32,7 +32,7 @@ export default function AdminAutos() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/autos/`, { headers });
+      const response = await fetch(`${API_BASE_URL}/autos`, { headers });
       if (response.ok) {
         const data = await response.json();
         setAutos(data);
@@ -58,7 +58,7 @@ export default function AdminAutos() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/autos/${id}/`, {
+      const response = await fetch(`${API_BASE_URL}/autos/${id}`, {
         method: 'DELETE',
         headers,
       });
