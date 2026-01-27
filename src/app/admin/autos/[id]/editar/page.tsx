@@ -247,9 +247,16 @@ export default function EditarAuto() {
     }
   };
 
+  const isCloudinaryConfigValid = (config: any) => {
+    if (!config) return false;
+    if (!config.cloud_name || !config.upload_preset) return false;
+    if (String(config.upload_preset).includes('cloudinary://')) return false;
+    return true;
+  };
+
   const uploadImages = async (): Promise<string[]> => {
-    if (!cloudinaryConfig) {
-      throw new Error('Configuración de Cloudinary no disponible');
+    if (!isCloudinaryConfigValid(cloudinaryConfig)) {
+      throw new Error('Configuración de Cloudinary inválida. Verifique que el campo "upload_preset" contenga el nombre del preset (no la URL).');
     }
 
     const imageUrls: string[] = [];
@@ -357,7 +364,8 @@ export default function EditarAuto() {
         setError(errorData.detail || 'Error al actualizar el auto');
       }
     } catch (err) {
-      setError('Error de conexión');
+      if (err instanceof Error) setError(err.message);
+      else setError('Error de conexión');
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { PhotoIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Marca, Modelo, Estado } from '@/types';
@@ -24,6 +25,7 @@ export default function NuevoAuto() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [cloudinaryConfig, setCloudinaryConfig] = useState<any>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -96,13 +98,25 @@ export default function NuevoAuto() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      setImages(files);
+      // Previsualización
+      const previews = files.map(file => URL.createObjectURL(file));
+      setImagePreviews(previews);
     }
   };
 
+  const isCloudinaryConfigValid = (config: any) => {
+    if (!config) return false;
+    if (!config.cloud_name || !config.upload_preset) return false;
+    // upload_preset debe ser un nombre, no una url tipo cloudinary://
+    if (String(config.upload_preset).includes('cloudinary://')) return false;
+    return true;
+  };
+
   const uploadImages = async (autoId: number): Promise<string[]> => {
-    if (!cloudinaryConfig) {
-      throw new Error('Configuración de Cloudinary no disponible');
+    if (!isCloudinaryConfigValid(cloudinaryConfig)) {
+      throw new Error('Configuración de Cloudinary inválida. Verifique que el campo "upload_preset" contenga el nombre del preset (no la URL).');
     }
 
     const imageUrls: string[] = [];
@@ -193,39 +207,29 @@ export default function NuevoAuto() {
         setError(errorData.detail || 'Error al crear el auto');
       }
     } catch (err) {
-      setError('Error de conexión');
+      // Mostrar mensaje de error más informativo si está disponible
+      if (err instanceof Error) setError(err.message);
+      else setError('Error de conexión');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin/autos" className="text-blue-600 hover:text-blue-800">
-                ← Volver a Autos
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Nuevo Auto</h1>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center py-8">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-blue-100 p-8 relative animate-fade-in">
+        <div className="flex items-center mb-8 gap-3">
+          <PhotoIcon className="h-10 w-10 text-blue-500" />
+          <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">Nuevo Auto</h1>
         </div>
-      </header>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
 
-      <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                  <p className="text-red-800">{error}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label htmlFor="marca_id" className="block text-sm font-medium text-gray-700">
                     Marca *
@@ -364,56 +368,68 @@ export default function NuevoAuto() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="images" className="block text-sm font-medium text-gray-700">
-                  Imágenes
-                </label>
-                <input
-                  type="file"
-                  id="images"
-                  name="images"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-                <p className="mt-1 text-sm text-gray-500">
-                  Selecciona múltiples imágenes del auto (opcional)
-                </p>
-              </div>
 
-              <div className="flex items-center">
-                <input
-                  id="en_stock"
-                  name="en_stock"
-                  type="checkbox"
-                  checked={formData.en_stock}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="en_stock" className="ml-2 block text-sm text-gray-900">
-                  Disponible en stock
-                </label>
+          <div>
+            <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-1">
+              Imágenes
+            </label>
+            <input
+              type="file"
+              id="images"
+              name="images"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Selecciona múltiples imágenes del auto (opcional)
+            </p>
+            {imagePreviews.length > 0 && (
+              <div className="flex flex-wrap gap-3 mt-3">
+                {imagePreviews.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`preview-${i}`}
+                    className="h-20 w-28 object-cover rounded-lg border border-blue-200 shadow-sm"
+                  />
+                ))}
               </div>
-
-              <div className="flex justify-end space-x-4">
-                <Link
-                  href="/admin/autos"
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Cancelar
-                </Link>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                >
-                  {loading ? 'Creando...' : 'Crear Auto'}
-                </button>
-              </div>
-            </form>
+            )}
           </div>
-        </div>
+
+
+          <div className="flex items-center mt-2">
+            <input
+              id="en_stock"
+              name="en_stock"
+              type="checkbox"
+              checked={formData.en_stock}
+              onChange={handleInputChange}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="en_stock" className="ml-2 block text-sm text-gray-900">
+              Disponible en stock
+            </label>
+          </div>
+
+          <div className="flex justify-end space-x-4 mt-8">
+            <Link
+              href="/admin/autos"
+              className="bg-white py-2 px-6 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Cancelar
+            </Link>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-gradient-to-r from-blue-600 to-blue-500 py-2 px-8 border border-transparent rounded-lg shadow-lg text-base font-bold text-white hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-150"
+            >
+              {loading ? 'Creando...' : 'Crear Auto'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
