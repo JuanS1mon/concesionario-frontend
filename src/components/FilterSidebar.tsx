@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { FiltrosAutos, Marca, Modelo } from '@/types';
 import { marcasAPI, modelosAPI } from '@/lib/api';
 
@@ -9,7 +9,7 @@ interface FilterSidebarProps {
   onFiltrosChange: (filtros: FiltrosAutos) => void;
 }
 
-export default function FilterSidebar({ filtros, onFiltrosChange }: FilterSidebarProps) {
+const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange }: FilterSidebarProps) {
   const [marcas, setMarcas] = useState<Marca[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
 
@@ -182,4 +182,6 @@ export default function FilterSidebar({ filtros, onFiltrosChange }: FilterSideba
       </button>
     </div>
   );
-}
+});
+
+export default FilterSidebar;

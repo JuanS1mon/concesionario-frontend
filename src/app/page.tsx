@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Navbar from '@/components/Navbar';
 import CarCard from '@/components/CarCard';
 import FilterSidebar from '@/components/FilterSidebar';
-import Modal from '@/components/Modal';
-import Carousel from '@/components/Carousel';
+import AutoDetalle from '@/components/AutoDetalle';
 import { Auto, FiltrosAutos } from '@/types';
 import { autosAPI } from '@/lib/api';
 
@@ -147,85 +146,12 @@ export default function Home() {
       </main>
 
       {/* Modal de detalles del auto */}
-      <Modal
-        isOpen={!!selectedAuto}
-        onClose={closeModal}
-        title=""
-      >
-        {selectedAuto && (
-          <div className="max-w-4xl mx-auto">
-            {/* Header con título premium */}
-            <div className="text-center mb-8 pb-6 border-b border-gray-200">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                {selectedAuto.marca?.nombre} {selectedAuto.modelo?.nombre}
-              </h2>
-              <div className="flex items-center justify-center space-x-4 text-lg">
-                <span className="text-red-600 font-bold text-2xl">
-                  ${selectedAuto.precio.toLocaleString()}
-                </span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-600">{selectedAuto.anio}</span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-600">{selectedAuto.estado?.nombre}</span>
-              </div>
-            </div>
-
-            {/* Carrusel de imágenes */}
-            <div className="mb-8">
-              <Carousel
-                images={selectedAuto.imagenes}
-                alt={`${selectedAuto.marca?.nombre} ${selectedAuto.modelo?.nombre}`}
-              />
-            </div>
-
-            {/* Especificaciones en grid moderno */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gray-50 rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-gray-900">{selectedAuto.anio}</div>
-                <div className="text-sm text-gray-600">Año</div>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-gray-900">{selectedAuto.tipo}</div>
-                <div className="text-sm text-gray-600">Tipo</div>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-gray-900">{selectedAuto.estado?.nombre}</div>
-                <div className="text-sm text-gray-600">Estado</div>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4 text-center">
-                <div className={`text-2xl font-bold ${selectedAuto.en_stock ? 'text-green-600' : 'text-red-600'}`}>
-                  {selectedAuto.en_stock ? 'Disponible' : 'Agotado'}
-                </div>
-                <div className="text-sm text-gray-600">Stock</div>
-              </div>
-            </div>
-
-            {/* Descripción */}
-            {selectedAuto.descripcion && (
-              <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Descripción</h3>
-                <p className="text-gray-700 leading-relaxed">{selectedAuto.descripcion}</p>
-              </div>
-            )}
-
-            {/* Botones de acción premium */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
-              <button className="flex-1 bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Solicitar Cotización
-              </button>
-              <button className="flex-1 bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Contactar Vendedor
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
+      {selectedAuto && (
+        <AutoDetalle
+          auto={selectedAuto}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 }

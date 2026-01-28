@@ -16,7 +16,11 @@ export default function EditarAuto() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
-  const [cloudinaryConfig, setCloudinaryConfig] = useState<any>(null);
+  const [imageMetadata, setImageMetadata] = useState({
+    titulo: '',
+    descripcion: '',
+    alt: '',
+  });
   const [marcas, setMarcas] = useState<any[]>([]);
   const [modelos, setModelos] = useState<any[]>([]);
   const [estados, setEstados] = useState<any[]>([]);
@@ -60,16 +64,14 @@ export default function EditarAuto() {
       }
 
       console.log('📡 Haciendo llamadas a la API...');
-      const [marcasRes, estadosRes, cloudinaryRes] = await Promise.all([
+      const [marcasRes, estadosRes] = await Promise.all([
         fetch(`${API_BASE_URL}/marcas/`, { headers }),
         fetch(`${API_BASE_URL}/estados/`, { headers }),
-        fetch(`${API_BASE_URL}/configuracion-cloudinary`, { headers }).catch(() => null),
       ]);
 
       console.log('✅ Respuestas recibidas:', {
         marcas: marcasRes.status,
         estados: estadosRes.status,
-        cloudinary: cloudinaryRes?.status || 'no disponible'
       });
 
       if (marcasRes.ok) {
@@ -82,12 +84,6 @@ export default function EditarAuto() {
         const estadosData = await estadosRes.json();
         console.log('📊 Estados cargados:', estadosData.length);
         setEstados(estadosData);
-      }
-
-      if (cloudinaryRes && cloudinaryRes.ok) {
-        const cloudinaryData = await cloudinaryRes.json();
-        console.log('☁️ Configuración Cloudinary cargada');
-        setCloudinaryConfig(cloudinaryData);
       }
 
       console.log('✅ Datos básicos cargados, llamando loadAuto...');
@@ -247,53 +243,35 @@ export default function EditarAuto() {
     }
   };
 
-  const isCloudinaryConfigValid = (config: any) => {
-    if (!config) return false;
-    if (!config.cloud_name || !config.upload_preset) return false;
-    if (String(config.upload_preset).includes('cloudinary://')) return false;
-    return true;
-  };
-
   const uploadImages = async (): Promise<string[]> => {
-    if (!isCloudinaryConfigValid(cloudinaryConfig)) {
-      throw new Error('Configuración de Cloudinary inválida. Verifique que el campo "upload_preset" contenga el nombre del preset (no la URL).');
-    }
-
     const imageUrls: string[] = [];
 
     for (const image of images) {
       const formData = new FormData();
       formData.append('file', image);
-      formData.append('upload_preset', cloudinaryConfig.upload_preset);
+      formData.append('auto_id', autoId);
+      if (imageMetadata.titulo) formData.append('titulo', imageMetadata.titulo);
+      if (imageMetadata.descripcion) formData.append('descripcion', imageMetadata.descripcion);
+      if (imageMetadata.alt) formData.append('alt', imageMetadata.alt);
 
       try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloud_name}/image/upload`, {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/imagenes/upload`, {
           method: 'POST',
+          headers,
           body: formData,
         });
 
         if (response.ok) {
           const data = await response.json();
-          imageUrls.push(data.secure_url);
-
-          // Crear registro de imagen en la base de datos
-          const token = localStorage.getItem('token');
-          const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-          };
-          if (token) {
-            headers.Authorization = `Bearer ${token}`;
-          }
-
-          await fetch(`${API_BASE_URL}/imagenes`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              auto_id: parseInt(autoId),
-              url: data.secure_url,
-              public_id: data.public_id,
-            }),
-          });
+          imageUrls.push(data.url);
+        } else {
+          console.error('Error uploading image:', response.status, await response.text());
         }
       } catch (err) {
         console.error('Error uploading image:', err);
@@ -641,6 +619,56 @@ export default function EditarAuto() {
                   )}
                 </div>
               </div>
+
+              {/* Metadata para imágenes */}
+              {imagePreviews.length > 0 && (
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Metadata para las Nuevas Imágenes (opcional, mejora SEO)
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label htmlFor="imageTitulo" className="block text-xs font-medium text-gray-600">
+                        Título
+                      </label>
+                      <input
+                        type="text"
+                        id="imageTitulo"
+                        value={imageMetadata.titulo}
+                        onChange={(e) => setImageMetadata(prev => ({ ...prev, titulo: e.target.value }))}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Título de la imagen"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="imageAlt" className="block text-xs font-medium text-gray-600">
+                        Texto Alternativo (Alt)
+                      </label>
+                      <input
+                        type="text"
+                        id="imageAlt"
+                        value={imageMetadata.alt}
+                        onChange={(e) => setImageMetadata(prev => ({ ...prev, alt: e.target.value }))}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Descripción para accesibilidad"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="imageDescripcion" className="block text-xs font-medium text-gray-600">
+                        Descripción
+                      </label>
+                      <input
+                        type="text"
+                        id="imageDescripcion"
+                        value={imageMetadata.descripcion}
+                        onChange={(e) => setImageMetadata(prev => ({ ...prev, descripcion: e.target.value }))}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Descripción detallada"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center">
                 <input

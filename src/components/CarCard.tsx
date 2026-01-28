@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import { Auto } from '@/types';
 
@@ -8,24 +9,106 @@ interface CarCardProps {
   onClick: () => void;
 }
 
-export default function CarCard({ auto, onClick }: CarCardProps) {
-  const imagenPrincipal = auto.imagenes?.[0]?.url || 'https://via.placeholder.com/400x300?text=No+Image';
+const CarCard = memo(function CarCard({ auto, onClick }: CarCardProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Carousel automático cada 10 segundos
+  useEffect(() => {
+    if (auto.imagenes && auto.imagenes.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) =>
+          prevIndex === auto.imagenes.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [auto.imagenes]);
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === auto.imagenes.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? auto.imagenes.length - 1 : prevIndex - 1
+    );
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  const getLowQualityImageUrl = (url: string) => {
+    // Asumiendo URLs de Cloudinary, agregar parámetro de baja calidad
+    if (url.includes('cloudinary.com')) {
+      return url.replace('/upload/', '/upload/q_50/');
+    }
+    return url;
+  };
+
+  const imagenActual = auto.imagenes?.[currentImageIndex] || auto.imagenes?.[0];
+  const imagenPrincipal = imagenActual ? getLowQualityImageUrl(imagenActual.url) : 'https://via.placeholder.com/400x300?text=No+Image';
 
   return (
     <div
       className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 group"
-      onClick={onClick}
     >
       <div className="relative h-56 overflow-hidden">
         <Image
           src={imagenPrincipal}
           alt={`${auto.marca?.nombre} ${auto.modelo?.nombre}`}
           fill
-          className="object-cover group-hover:scale-110 transition-transform duration-500"
+          className="object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
+          onClick={onClick}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
+
+        {/* Controles de navegación invisibles */}
+        {auto.imagenes && auto.imagenes.length > 1 && (
+          <>
+            <div
+              className="absolute left-0 top-0 w-1/2 h-full cursor-pointer z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                prevImage();
+              }}
+              aria-label="Imagen anterior"
+            />
+            <div
+              className="absolute right-0 top-0 w-1/2 h-full cursor-pointer z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                nextImage();
+              }}
+              aria-label="Imagen siguiente"
+            />
+          </>
+        )}
+
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        {/* Indicadores de imagen si hay múltiples */}
+        {auto.imagenes && auto.imagenes.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            {auto.imagenes.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToImage(index);
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                }`}
+                aria-label={`Ir a imagen ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col space-y-2">
@@ -78,7 +161,7 @@ export default function CarCard({ auto, onClick }: CarCardProps) {
             </svg>
             {auto.imagenes?.length || 0} fotos
           </div>
-          <button className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-300 flex items-center">
+          <button className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-300 flex items-center" onClick={onClick}>
             <span className="mr-2">Ver detalles</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -88,4 +171,6 @@ export default function CarCard({ auto, onClick }: CarCardProps) {
       </div>
     </div>
   );
-}
+});
+
+export default CarCard;
