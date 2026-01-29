@@ -19,7 +19,7 @@ export default function Navbar() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  AutoPremium
+                  Concecionarios.Cloud
                 </h1>
                 <p className="text-xs text-gray-500 -mt-1">Concesionario</p>
               </div>
