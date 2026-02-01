@@ -7,9 +7,10 @@ import { marcasAPI, modelosAPI } from '@/lib/api';
 interface FilterSidebarProps {
   filtros: FiltrosAutos;
   onFiltrosChange: (filtros: FiltrosAutos) => void;
+  onToggle?: () => void;
 }
 
-const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange }: FilterSidebarProps) {
+const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, onToggle }: FilterSidebarProps) {
   const [marcas, setMarcas] = useState<Marca[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
 
@@ -50,7 +51,20 @@ const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange }: 
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold mb-4">Filtros</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Filtros</h3>
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Ocultar filtros"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {/* Marca */}
       <div className="mb-4">

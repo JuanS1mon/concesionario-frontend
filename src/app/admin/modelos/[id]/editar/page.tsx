@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CubeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Modelo, Marca } from '@/types';
 import { API_BASE_URL } from '@/lib/constants';
+import Button from '@/components/Button';
+import AdminHero from '@/components/AdminHero';
 
 export default function EditarModelo() {
   const [nombre, setNombre] = useState('');
@@ -14,6 +17,7 @@ export default function EditarModelo() {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
   const [isClient, setIsClient] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -118,93 +122,106 @@ export default function EditarModelo() {
   if (loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
+        </div>
+        <p className="mt-4 text-gray-600 font-medium">Cargando modelo...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin/modelos" className="text-blue-600 hover:text-blue-800">
-                ← Volver a Modelos
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Editar Modelo</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
+      </div>
 
-      <div className="max-w-md mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Editar Modelo"
+          description="Actualiza la información del modelo de vehículo"
+          buttonText="Ver Modelos"
+          buttonHref="/admin/modelos"
+          buttonIcon={<CubeIcon className="h-6 w-6" />}
+        />
+      )}
+
+      {/* Main Content */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                  <p className="text-red-800">{error}</p>
+                <div className="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6">
+                  <div className="flex items-center">
+                    <svg className="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-red-800 font-medium">{error}</p>
+                  </div>
                 </div>
               )}
 
-              <div>
-                <label htmlFor="marca" className="block text-sm font-medium text-gray-700">
-                  Marca *
-                </label>
-                <select
-                  id="marca"
-                  name="marca"
-                  required
-                  value={marcaId}
-                  onChange={(e) => setMarcaId(e.target.value)}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">Seleccionar marca...</option>
-                  {marcas.map((marca) => (
-                    <option key={marca.id} value={marca.id.toString()}>
-                      {marca.nombre}
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label htmlFor="marca" className="block text-sm font-medium text-gray-700 mb-2">
+                    Marca *
+                  </label>
+                  <select
+                    id="marca"
+                    name="marca"
+                    required
+                    value={marcaId}
+                    onChange={(e) => setMarcaId(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  >
+                    <option value="">Seleccionar marca...</option>
+                    {marcas.map((marca) => (
+                      <option key={marca.id} value={marca.id.toString()}>
+                        {marca.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre del Modelo *
+                  </label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    required
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    placeholder="Ej: Corolla, Focus, Serie 3..."
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
-                  Nombre del Modelo *
-                </label>
-                <input
-                  type="text"
-                  id="nombre"
-                  name="nombre"
-                  required
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Ej: Corolla, Focus, Serie 3..."
-                />
-              </div>
-
-              <div className="flex justify-end space-x-4">
-                <Link
-                  href="/admin/modelos"
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+              <div className="flex justify-end space-x-4 pt-4">
+                <Button variant="secondary" href="/admin/modelos">
                   Cancelar
-                </Link>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                >
+                </Button>
+                <Button type="submit" disabled={loading}>
                   {loading ? 'Actualizando...' : 'Actualizar Modelo'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

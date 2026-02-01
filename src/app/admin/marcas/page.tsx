@@ -1,16 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TagIcon, PlusCircleIcon, TrashIcon, PencilSquareIcon, ArrowLeftCircleIcon } from '@heroicons/react/24/solid';
+import { TagIcon, PlusCircleIcon, TrashIcon, PencilSquareIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Marca } from '@/types';
 import { API_BASE_URL } from '@/lib/constants';
+import Button from '@/components/Button';
+import AdminHero from '@/components/AdminHero';
 
 export default function AdminMarcas() {
   const [marcas, setMarcas] = useState<Marca[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [heroVisible, setHeroVisible] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -68,97 +71,102 @@ export default function AdminMarcas() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/admin');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
+        </div>
+        <p className="mt-4 text-gray-600 font-medium">Cargando marcas...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center py-8">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-blue-100 p-8 animate-fade-in">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <ArrowLeftCircleIcon className="h-8 w-8 text-blue-500" />
-            <Link href="/admin/dashboard" className="text-blue-700 hover:underline font-semibold text-lg">Volver al Dashboard</Link>
-            <TagIcon className="h-8 w-8 text-blue-500 ml-4" />
-            <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">Gestionar Marcas</h1>
-          </div>
-          <div className="flex gap-4">
-            <Link
-              href="/admin/marcas/nueva"
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg text-base font-bold shadow-lg flex items-center gap-2"
-            >
-              <PlusCircleIcon className="h-6 w-6" /> Nueva Marca
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2 rounded-lg text-base font-bold shadow-lg"
-            >
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-blue-200">
-            <thead className="bg-blue-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Nombre</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-blue-700 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-blue-100">
-              {marcas.map((marca) => (
-                <tr key={marca.id} className="hover:bg-blue-50 transition-all">
-                  <td className="px-6 py-4 whitespace-nowrap text-base font-bold text-blue-900">{marca.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base text-blue-900">{marca.nombre}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-base font-bold space-x-2">
-                    <Link
-                      href={`/admin/marcas/${marca.id}/editar`}
-                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 font-semibold transition-all"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" /> Editar
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(marca.id)}
-                      className="inline-flex items-center gap-1 text-red-600 hover:text-red-900 px-3 py-1 rounded-lg bg-red-50 hover:bg-red-100 font-semibold transition-all"
-                    >
-                      <TrashIcon className="h-5 w-5" /> Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {marcas.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-blue-500">No hay marcas registradas aún.</p>
-            <Link
-              href="/admin/marcas/nueva"
-              className="mt-4 inline-flex items-center px-6 py-2 border border-transparent text-base font-bold rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
-            >
-              <PlusCircleIcon className="h-6 w-6 mr-2" /> Agregar la primera marca
-            </Link>
-          </div>
-        )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
       </div>
+
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Gestión de Marcas"
+          description="Administra las marcas de vehículos disponibles en tu inventario"
+          buttonText="Nueva Marca"
+          buttonHref="/admin/marcas/nueva"
+          buttonIcon={<PlusCircleIcon className="h-6 w-6" />}
+        />
+      )}
+
+      {/* Main Content */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Lista de Marcas</h2>
+            <p className="text-gray-600">Gestiona todas las marcas registradas</p>
+          </div>
+
+          {error && (
+            <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6">
+              <div className="flex items-center">
+                <svg className="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <p className="text-red-800 font-medium">{error}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nombre</th>
+                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {marcas.map((marca) => (
+                    <tr key={marca.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{marca.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.nombre}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                        <Button href={`/admin/marcas/${marca.id}/editar`} className="bg-blue-600 hover:bg-blue-700 py-2 px-3 text-sm inline-flex items-center">
+                          <PencilSquareIcon className="h-4 w-4 mr-1" /> Editar
+                        </Button>
+                        <Button onClick={() => handleDelete(marca.id)} className="bg-red-600 hover:bg-red-700 py-2 px-3 text-sm inline-flex items-center">
+                          <TrashIcon className="h-4 w-4 mr-1" /> Eliminar
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {marcas.length === 0 && (
+              <div className="text-center py-16">
+                <TagIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">No hay marcas registradas aún.</p>
+                <Button href="/admin/marcas/nueva" className="bg-blue-600 hover:bg-blue-700 inline-flex items-center">
+                  <PlusCircleIcon className="h-5 w-5 mr-2" /> Agregar la primera marca
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

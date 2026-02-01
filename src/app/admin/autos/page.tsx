@@ -1,22 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { WrenchScrewdriverIcon, PlusCircleIcon, TrashIcon, PencilSquareIcon, ArrowLeftCircleIcon } from '@heroicons/react/24/solid';
+import { useState, useEffect, useCallback } from 'react';
+import { PlusCircleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Auto } from '@/types';
+import Navbar from '@/components/Navbar';
+import CarCard from '@/components/CarCard';
+import FilterSidebar from '@/components/FilterSidebar';
+import AutoDetalle from '@/components/AutoDetalle';
+import AdminHero from '@/components/AdminHero';
+import { Auto, FiltrosAutos } from '@/types';
+import { autosAPI } from '@/lib/api';
 import { API_BASE_URL } from '@/lib/constants';
+import Button from '@/components/Button';
 
 export default function AdminAutos() {
   const [autos, setAutos] = useState<Auto[]>([]);
+  const [filtros, setFiltros] = useState<FiltrosAutos>({});
+  const [selectedAuto, setSelectedAuto] = useState<Auto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [heroVisible, setHeroVisible] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     checkAuth();
     loadAutos();
-  }, []);
+  }, [filtros]);
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -25,20 +35,30 @@ export default function AdminAutos() {
     }
   };
 
-  const loadAutos = async () => {
+  const loadAutos = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/autos`);
-      if (response.ok) {
-        const data = await response.json();
-        setAutos(data);
-      } else {
-        setError('Error al cargar los autos');
-      }
+      setLoading(true);
+      const response = await autosAPI.getAll(filtros);
+      setAutos(response.data);
+      setError(null);
     } catch (err) {
-      setError('Error de conexión');
+      setError('Error al cargar los autos');
+      console.error('Error loading autos:', err);
     } finally {
       setLoading(false);
     }
+  }, [filtros]);
+
+  const handleAutoClick = (auto: Auto) => {
+    setSelectedAuto(auto);
+  };
+
+  const closeModal = () => {
+    setSelectedAuto(null);
+  };
+
+  const handleEdit = (id: number) => {
+    router.push(`/admin/autos/${id}/editar`);
   };
 
   const handleDelete = async (id: number) => {
@@ -68,133 +88,123 @@ export default function AdminAutos() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/admin');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center py-8">
-      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl border border-blue-100 p-8 animate-fade-in">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <ArrowLeftCircleIcon className="h-8 w-8 text-blue-500" />
-            <Link href="/admin/dashboard" className="text-blue-700 hover:underline font-semibold text-lg">Volver al Dashboard</Link>
-            <WrenchScrewdriverIcon className="h-8 w-8 text-blue-500 ml-4" />
-            <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">Gestionar Autos</h1>
-          </div>
-          <div className="flex gap-4">
-            <Link
-              href="/admin/autos/nuevo"
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg text-base font-bold shadow-lg flex items-center gap-2"
-            >
-              <PlusCircleIcon className="h-6 w-6" /> Nuevo Auto
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2 rounded-lg text-base font-bold shadow-lg"
-            >
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-blue-200">
-            <thead className="bg-blue-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Auto</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Año</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Precio</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-blue-700 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-blue-100">
-              {autos.map((auto) => (
-                <tr key={auto.id} className="hover:bg-blue-50 transition-all">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {auto.imagenes && auto.imagenes.length > 0 && (
-                        <img
-                          className="h-12 w-12 rounded-lg object-cover mr-3 border border-blue-200 shadow-sm"
-                          src={auto.imagenes[0].url}
-                          alt={`${auto.marca?.nombre} ${auto.modelo?.nombre}`}
-                        />
-                      )}
-                      <div>
-                        <div className="text-base font-bold text-blue-900">
-                          {auto.marca?.nombre} {auto.modelo?.nombre}
-                        </div>
-                        <div className="text-xs text-blue-500">ID: {auto.id}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base text-blue-900">{auto.anio}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base text-blue-900">{auto.tipo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base text-blue-900">${auto.precio.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                      auto.en_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {auto.estado?.nombre}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base text-blue-900">
-                    {auto.en_stock ? (
-                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold text-xs">Disponible</span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 bg-red-100 text-red-800 px-2 py-1 rounded-full font-semibold text-xs">No disponible</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-base font-bold space-x-2">
-                    <Link
-                      href={`/admin/autos/${auto.id}/editar`}
-                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 font-semibold transition-all"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" /> Editar
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(auto.id)}
-                      className="inline-flex items-center gap-1 text-red-600 hover:text-red-900 px-3 py-1 rounded-lg bg-red-50 hover:bg-red-100 font-semibold transition-all"
-                    >
-                      <TrashIcon className="h-5 w-5" /> Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {autos.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-blue-500">No hay autos registrados aún.</p>
-            <Link
-              href="/admin/autos/nuevo"
-              className="mt-4 inline-flex items-center px-6 py-2 border border-transparent text-base font-bold rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
-            >
-              <PlusCircleIcon className="h-6 w-6 mr-2" /> Agregar el primer auto
-            </Link>
-          </div>
-        )}
+    <div className="min-h-screen bg-white">
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
       </div>
+
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Panel de Administración - Autos"
+          description="Gestiona la flota de autos premium. Agrega, edita y administra todos los vehículos."
+          buttonText="Agregar Nuevo Auto"
+          buttonHref="/admin/autos/nuevo"
+          buttonIcon={<PlusCircleIcon className="h-6 w-6" />}
+        />
+      )}
+
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
+        <div className={sidebarVisible ? "max-w-7xl mx-auto" : "w-full"}>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar de filtros */}
+          {sidebarVisible ? (
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 sticky top-8">
+                <FilterSidebar filtros={filtros} onFiltrosChange={setFiltros} onToggle={() => setSidebarVisible(false)} />
+              </div>
+            </div>
+          ) : (
+            <div className="lg:col-span-1">
+              <button
+                onClick={() => setSidebarVisible(true)}
+                className="w-full bg-white hover:bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-4 text-center transition-all hover:shadow-xl sticky top-8"
+              >
+                <svg className="w-6 h-6 mx-auto mb-1 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <span className="text-xs font-medium text-gray-700">Mostrar Filtros</span>
+              </button>
+            </div>
+          )}
+
+          {/* Lista de autos */}
+          <div className={sidebarVisible ? "lg:col-span-3" : "lg:col-span-4"}>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Autos</h2>
+              <p className="text-gray-600">Administra todos los vehículos de la flota</p>
+            </div>
+
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-red-200 rounded-full animate-spin"></div>
+                  <div className="absolute top-0 left-0 w-16 h-16 border-4 border-red-600 rounded-full animate-spin border-t-transparent"></div>
+                </div>
+                <p className="mt-4 text-gray-600 font-medium">Cargando vehículos...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6 mb-8">
+                <div className="flex items-center">
+                  <svg className="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <p className="text-red-800 font-medium">{error}</p>
+                </div>
+                <button
+                  onClick={loadAutos}
+                  className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+
+            {!loading && !error && autos.length === 0 && (
+              <div className="text-center py-16 bg-gray-50 rounded-2xl">
+                <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron vehículos</h3>
+                <p className="text-gray-600">Prueba ajustando los filtros o agrega un nuevo auto.</p>
+              </div>
+            )}
+
+            {!loading && !error && autos.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {autos.map((auto) => (
+                  <CarCard
+                    key={auto.id}
+                    auto={auto}
+                    onClick={() => handleAutoClick(auto)}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        </div>
+      </main>
+
+      {/* Modal de detalles del auto */}
+      {selectedAuto && (
+        <AutoDetalle
+          auto={selectedAuto}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 }

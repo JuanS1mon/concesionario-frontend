@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PhotoIcon } from '@heroicons/react/24/solid';
+import { PhotoIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Marca, Modelo, Estado } from '@/types';
 import { API_BASE_URL } from '@/lib/constants';
+import FormField from '@/components/FormField';
+import Button from '@/components/Button';
+import AdminHero from '@/components/AdminHero';
 
 export default function NuevoAuto() {
   const [formData, setFormData] = useState({
@@ -30,6 +33,7 @@ export default function NuevoAuto() {
     descripcion: '',
     alt: '',
   });
+  const [heroVisible, setHeroVisible] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -195,270 +199,247 @@ export default function NuevoAuto() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center py-8">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-blue-100 p-8 relative animate-fade-in">
-        <div className="flex items-center mb-8 gap-3">
-          <PhotoIcon className="h-10 w-10 text-blue-500" />
-          <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">Nuevo Auto</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30 flex gap-2">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Nuevo Auto"
+          description="Agrega un nuevo vehículo al inventario"
+          buttonText="Ver Inventario"
+          buttonHref="/admin/autos"
+          buttonIcon={<PhotoIcon className="h-5 w-5" />}
+        />
+      )}
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <FormField
+            label="Marca"
+            name="marca_id"
+            as="select"
+            value={formData.marca_id}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Seleccionar marca</option>
+            {marcas.map((marca) => (
+              <option key={marca.id} value={marca.id}>
+                {marca.nombre}
+              </option>
+            ))}
+          </FormField>
+
+          <FormField
+            label="Modelo"
+            name="modelo_id"
+            as="select"
+            value={formData.modelo_id}
+            onChange={handleInputChange}
+            required
+            disabled={!formData.marca_id}
+          >
+            <option value="">Seleccionar modelo</option>
+            {modelos.map((modelo) => (
+              <option key={modelo.id} value={modelo.id}>
+                {modelo.nombre}
+              </option>
+            ))}
+          </FormField>
+
+          <FormField
+            label="Año"
+            name="anio"
+            type="number"
+            value={formData.anio}
+            onChange={handleInputChange}
+            required
+            min="1900"
+            max={new Date().getFullYear() + 1}
+          />
+
+          <FormField
+            label="Tipo"
+            name="tipo"
+            as="select"
+            value={formData.tipo}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Seleccionar tipo</option>
+            <option value="Sedán">Sedán</option>
+            <option value="SUV">SUV</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="Pickup">Pickup</option>
+            <option value="Deportivo">Deportivo</option>
+            <option value="Coupe">Coupe</option>
+            <option value="Convertible">Convertible</option>
+            <option value="Minivan">Minivan</option>
+          </FormField>
+
+          <FormField
+            label="Precio"
+            name="precio"
+            type="number"
+            value={formData.precio}
+            onChange={handleInputChange}
+            required
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+          />
+
+          <FormField
+            label="Estado"
+            name="estado_id"
+            as="select"
+            value={formData.estado_id}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Seleccionar estado</option>
+            {estados.map((estado) => (
+              <option key={estado.id} value={estado.id}>
+                {estado.nombre}
+              </option>
+            ))}
+          </FormField>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <p className="text-red-800">{error}</p>
+
+        <FormField
+          label="Descripción"
+          name="descripcion"
+          as="textarea"
+          value={formData.descripcion}
+          onChange={handleInputChange}
+          placeholder="Descripción opcional del auto..."
+        />
+
+        <div>
+          <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-1">
+            Imágenes
+          </label>
+          <input
+            type="file"
+            id="images"
+            name="images"
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            Selecciona múltiples imágenes del auto (opcional)
+          </p>
+          {imagePreviews.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-3">
+              {imagePreviews.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt={`preview-${i}`}
+                  className="h-20 w-28 object-cover rounded-lg border border-blue-200 shadow-sm"
+                />
+              ))}
             </div>
           )}
+        </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="marca_id" className="block text-sm font-medium text-gray-700">
-                    Marca *
-                  </label>
-                  <select
-                    id="marca_id"
-                    name="marca_id"
-                    required
-                    value={formData.marca_id}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Seleccionar marca</option>
-                    {marcas.map((marca) => (
-                      <option key={marca.id} value={marca.id}>
-                        {marca.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="modelo_id" className="block text-sm font-medium text-gray-700">
-                    Modelo *
-                  </label>
-                  <select
-                    id="modelo_id"
-                    name="modelo_id"
-                    required
-                    value={formData.modelo_id}
-                    onChange={handleInputChange}
-                    disabled={!formData.marca_id}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
-                  >
-                    <option value="">Seleccionar modelo</option>
-                    {modelos.map((modelo) => (
-                      <option key={modelo.id} value={modelo.id}>
-                        {modelo.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="anio" className="block text-sm font-medium text-gray-700">
-                    Año *
-                  </label>
-                  <input
-                    type="number"
-                    id="anio"
-                    name="anio"
-                    required
-                    min="1900"
-                    max={new Date().getFullYear() + 1}
-                    value={formData.anio}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">
-                    Tipo *
-                  </label>
-                  <select
-                    id="tipo"
-                    name="tipo"
-                    required
-                    value={formData.tipo}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Seleccionar tipo</option>
-                    <option value="Sedán">Sedán</option>
-                    <option value="SUV">SUV</option>
-                    <option value="Hatchback">Hatchback</option>
-                    <option value="Pickup">Pickup</option>
-                    <option value="Deportivo">Deportivo</option>
-                    <option value="Coupe">Coupe</option>
-                    <option value="Convertible">Convertible</option>
-                    <option value="Minivan">Minivan</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="precio" className="block text-sm font-medium text-gray-700">
-                    Precio *
-                  </label>
-                  <input
-                    type="number"
-                    id="precio"
-                    name="precio"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={formData.precio}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="estado_id" className="block text-sm font-medium text-gray-700">
-                    Estado *
-                  </label>
-                  <select
-                    id="estado_id"
-                    name="estado_id"
-                    required
-                    value={formData.estado_id}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Seleccionar estado</option>
-                    {estados.map((estado) => (
-                      <option key={estado.id} value={estado.id}>
-                        {estado.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
+        {/* Metadata para imágenes */}
+        {imagePreviews.length > 0 && (
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Metadata para las Imágenes (opcional, mejora SEO)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
-                  Descripción
+                <label htmlFor="imageTitulo" className="block text-xs font-medium text-gray-600">
+                  Título
                 </label>
-                <textarea
-                  id="descripcion"
-                  name="descripcion"
-                  rows={4}
-                  value={formData.descripcion}
-                  onChange={handleInputChange}
+                <input
+                  type="text"
+                  id="imageTitulo"
+                  value={imageMetadata.titulo}
+                  onChange={(e) => setImageMetadata(prev => ({ ...prev, titulo: e.target.value }))}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Descripción opcional del auto..."
+                  placeholder="Título de la imagen"
                 />
               </div>
-
-
-          <div>
-            <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-1">
-              Imágenes
-            </label>
-            <input
-              type="file"
-              id="images"
-              name="images"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              Selecciona múltiples imágenes del auto (opcional)
-            </p>
-            {imagePreviews.length > 0 && (
-              <div className="flex flex-wrap gap-3 mt-3">
-                {imagePreviews.map((src, i) => (
-                  <img
-                    key={i}
-                    src={src}
-                    alt={`preview-${i}`}
-                    className="h-20 w-28 object-cover rounded-lg border border-blue-200 shadow-sm"
-                  />
-                ))}
+              <div>
+                <label htmlFor="imageAlt" className="block text-xs font-medium text-gray-600">
+                  Texto Alternativo (Alt)
+                </label>
+                <input
+                  type="text"
+                  id="imageAlt"
+                  value={imageMetadata.alt}
+                  onChange={(e) => setImageMetadata(prev => ({ ...prev, alt: e.target.value }))}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Descripción para accesibilidad"
+                />
               </div>
-            )}
-          </div>
-
-          {/* Metadata para imágenes */}
-          {imagePreviews.length > 0 && (
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Metadata para las Imágenes (opcional, mejora SEO)
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label htmlFor="imageTitulo" className="block text-xs font-medium text-gray-600">
-                    Título
-                  </label>
-                  <input
-                    type="text"
-                    id="imageTitulo"
-                    value={imageMetadata.titulo}
-                    onChange={(e) => setImageMetadata(prev => ({ ...prev, titulo: e.target.value }))}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Título de la imagen"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="imageAlt" className="block text-xs font-medium text-gray-600">
-                    Texto Alternativo (Alt)
-                  </label>
-                  <input
-                    type="text"
-                    id="imageAlt"
-                    value={imageMetadata.alt}
-                    onChange={(e) => setImageMetadata(prev => ({ ...prev, alt: e.target.value }))}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Descripción para accesibilidad"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="imageDescripcion" className="block text-xs font-medium text-gray-600">
-                    Descripción
-                  </label>
-                  <input
-                    type="text"
-                    id="imageDescripcion"
-                    value={imageMetadata.descripcion}
-                    onChange={(e) => setImageMetadata(prev => ({ ...prev, descripcion: e.target.value }))}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Descripción detallada"
-                  />
-                </div>
+              <div>
+                <label htmlFor="imageDescripcion" className="block text-xs font-medium text-gray-600">
+                  Descripción
+                </label>
+                <input
+                  type="text"
+                  id="imageDescripcion"
+                  value={imageMetadata.descripcion}
+                  onChange={(e) => setImageMetadata(prev => ({ ...prev, descripcion: e.target.value }))}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Descripción detallada"
+                />
               </div>
             </div>
-          )}
-
-
-          <div className="flex items-center mt-2">
-            <input
-              id="en_stock"
-              name="en_stock"
-              type="checkbox"
-              checked={formData.en_stock}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label htmlFor="en_stock" className="ml-2 block text-sm text-gray-900">
-              Disponible en stock
-            </label>
           </div>
+        )}
 
-          <div className="flex justify-end space-x-4 mt-8">
-            <Link
-              href="/admin/autos"
-              className="bg-white py-2 px-6 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancelar
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-blue-500 py-2 px-8 border border-transparent rounded-lg shadow-lg text-base font-bold text-white hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-150"
-            >
-              {loading ? 'Creando...' : 'Crear Auto'}
-            </button>
+        <div className="flex items-center mt-2">
+          <input
+            id="en_stock"
+            name="en_stock"
+            type="checkbox"
+            checked={formData.en_stock}
+            onChange={handleInputChange}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label htmlFor="en_stock" className="ml-2 block text-sm text-gray-900">
+            Disponible en stock
+          </label>
+        </div>
+
+        <div className="flex justify-end space-x-4 mt-8">
+          <Button variant="secondary" href="/admin/autos">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Creando...' : 'Crear Auto'}
+          </Button>
+        </div>
+      </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

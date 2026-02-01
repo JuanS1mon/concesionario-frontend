@@ -36,7 +36,7 @@ export default function Navbar() {
               <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300"></div>
             </Link>
             <Link
-              href="/admin"
+              href="/admin/dashboard"
               className="relative text-gray-700 hover:text-red-600 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-red-50 group"
             >
               <span className="relative z-10">Panel Admin</span>
