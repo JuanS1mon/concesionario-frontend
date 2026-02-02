@@ -1,6 +1,6 @@
 {
   "build": {
-    "builder": "DOCKERFILE"
+    "builder": "NIXPACKS"
   },
   "deploy": {
     "startCommand": "npm run start -- --port $PORT --hostname 0.0.0.0",
