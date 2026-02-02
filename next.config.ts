@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  onDemandEntries: {
+    maxInactiveAge: 0,
+  },
   allowedDevOrigins: [
     '127.0.0.1:3000',
     'localhost:3000',
