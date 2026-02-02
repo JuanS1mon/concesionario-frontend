@@ -46,6 +46,7 @@ const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, on
 
   const updateFiltro = (key: keyof FiltrosAutos, value: string | number | boolean | undefined) => {
     const newFiltros = { ...filtros, [key]: value };
+    console.log(`[FilterSidebar] Actualizando ${key}:`, value, 'Nuevos filtros:', newFiltros);
     onFiltrosChange(newFiltros);
   };
 
@@ -72,7 +73,7 @@ const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, on
           Marca
         </label>
         <select
-          value={filtros.marca_id || ''}
+          value={filtros.marca_id ? String(filtros.marca_id) : ''}
           onChange={(e) => handleMarcaChange(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           aria-label="Seleccionar marca"
@@ -92,7 +93,7 @@ const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, on
           Modelo
         </label>
         <select
-          value={filtros.modelo_id || ''}
+          value={filtros.modelo_id ? String(filtros.modelo_id) : ''}
           onChange={(e) => updateFiltro('modelo_id', e.target.value ? parseInt(e.target.value) : undefined)}
           className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           disabled={!filtros.marca_id}

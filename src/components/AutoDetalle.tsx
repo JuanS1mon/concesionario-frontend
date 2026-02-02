@@ -78,16 +78,27 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
               {/* Imagen principal */}
               <div className="p-4 lg:p-6 flex flex-col bg-gray-50">
                 <div className="relative rounded-2xl overflow-hidden shadow-lg bg-white h-[45vh] lg:h-[70vh] mb-4">
-                  <Image
-                    src={getImageUrl(auto.imagenes[selectedImageIndex]?.url || '', 'medium')}
-                    alt={`${auto.marca?.nombre} ${auto.modelo?.nombre} - Imagen ${selectedImageIndex + 1}`}
-                    fill
-                    className="object-contain cursor-pointer"
-                    onClick={() => setIsFullscreen(true)}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 60vw"
-                  />
+                  {auto.imagenes && auto.imagenes.length > 0 && auto.imagenes[selectedImageIndex]?.url ? (
+                    <Image
+                      src={getImageUrl(auto.imagenes[selectedImageIndex].url, 'medium')}
+                      alt={`${auto.marca?.nombre} ${auto.modelo?.nombre} - Imagen ${selectedImageIndex + 1}`}
+                      fill
+                      className="object-contain cursor-pointer"
+                      onClick={() => setIsFullscreen(true)}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 60vw"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <div className="text-center">
+                        <svg className="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-gray-500 font-medium text-lg">Sin imagen disponible</span>
+                      </div>
+                    </div>
+                  )}
                   {/* Controles de navegación invisibles */}
-                  {auto.imagenes.length > 1 && (
+                  {auto.imagenes && auto.imagenes.length > 1 && (
                     <>
                       <div
                         className="absolute left-0 top-0 w-1/2 h-full cursor-pointer z-10"
@@ -109,7 +120,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                   )}
 
                   {/* Indicador de imagen actual */}
-                  {auto.imagenes.length > 1 && (
+                  {auto.imagenes && auto.imagenes.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
                       {selectedImageIndex + 1} / {auto.imagenes.length}
                     </div>
@@ -117,27 +128,29 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                 </div>
 
                 {/* Miniaturas - siempre horizontal, debajo de la imagen */}
-                {auto.imagenes.length > 1 && (
+                {auto.imagenes && auto.imagenes.length > 1 && (
                   <div className="flex space-x-2 overflow-x-auto pb-2 px-4 lg:px-6">
                     {auto.imagenes.map((imagen, index) => (
-                      <button
-                        key={imagen.id}
-                        onClick={() => goToImage(index)}
-                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                          index === selectedImageIndex
-                            ? 'border-blue-500 shadow-lg scale-105'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                        aria-label={`Ver imagen ${index + 1}`}
-                      >
-                        <Image
-                          src={getImageUrl(imagen.url, 'low')}
-                          alt={`Miniatura ${index + 1}`}
-                          width={64}
-                          height={64}
-                          className="object-cover w-full h-full"
-                        />
-                      </button>
+                      imagen.url && (
+                        <button
+                          key={imagen.id}
+                          onClick={() => goToImage(index)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                            index === selectedImageIndex
+                              ? 'border-blue-500 shadow-lg scale-105'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                          aria-label={`Ver imagen ${index + 1}`}
+                        >
+                          <Image
+                            src={getImageUrl(imagen.url, 'low')}
+                            alt={`Miniatura ${index + 1}`}
+                            width={64}
+                            height={64}
+                            className="object-cover w-full h-full"
+                          />
+                        </button>
+                      )
                     ))}
                   </div>
                 )}
@@ -211,11 +224,11 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
       </div>
 
       {/* Modal de pantalla completa */}
-      {isFullscreen && (
+      {isFullscreen && auto.imagenes && auto.imagenes.length > 0 && auto.imagenes[selectedImageIndex]?.url && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
           <div className="relative max-w-5xl w-full h-full flex items-center justify-center">
             <Image
-              src={getImageUrl(auto.imagenes[selectedImageIndex]?.url || '', 'high')}
+              src={getImageUrl(auto.imagenes[selectedImageIndex].url, 'high')}
               alt={`${auto.marca?.nombre} ${auto.modelo?.nombre} - Imagen ${selectedImageIndex + 1}`}
               width={1200}
               height={800}
@@ -234,7 +247,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
             </button>
 
             {/* Controles en pantalla completa */}
-            {auto.imagenes.length > 1 && (
+            {auto.imagenes && auto.imagenes.length > 1 && (
               <>
                 <button
                   onClick={prevImage}
@@ -258,9 +271,11 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
             )}
 
             {/* Indicador */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full">
-              {selectedImageIndex + 1} / {auto.imagenes.length}
-            </div>
+            {auto.imagenes && auto.imagenes.length > 0 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full">
+                {selectedImageIndex + 1} / {auto.imagenes.length}
+              </div>
+            )}
           </div>
         </div>
       )}

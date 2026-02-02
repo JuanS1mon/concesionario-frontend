@@ -38,7 +38,9 @@ export default function AdminAutos() {
   const loadAutos = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('[AdminAutos] Cargando autos con filtros:', filtros);
       const response = await autosAPI.getAll(filtros);
+      console.log('[AdminAutos] Respuesta de API:', response.data.length, 'autos');
       setAutos(response.data);
       setError(null);
     } catch (err) {

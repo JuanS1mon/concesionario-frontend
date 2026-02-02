@@ -299,11 +299,16 @@ export default function EditarAuto() {
 
     try {
       const token = localStorage.getItem('token');
+      console.log('[EditarAuto] Token en localStorage:', token ? `${token.substring(0, 50)}...` : 'NO ENCONTRADO');
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
       if (token) {
         headers.Authorization = `Bearer ${token}`;
+        console.log('[EditarAuto] Header Authorization:', headers.Authorization.substring(0, 50) + '...');
+      } else {
+        console.warn('[EditarAuto] ⚠️ Token NO encontrado en localStorage');
       }
 
       const autoData = {
@@ -322,6 +327,9 @@ export default function EditarAuto() {
         headers,
         body: JSON.stringify(autoData),
       });
+
+      console.log('[EditarAuto] Respuesta del servidor:', response.status);
+      console.log('[EditarAuto] Headers enviados:', headers);
 
       if (response.ok) {
         // Eliminar imágenes marcadas para eliminación
@@ -342,9 +350,11 @@ export default function EditarAuto() {
         router.push('/admin/autos');
       } else {
         const errorData = await response.json();
+        console.error('[EditarAuto] Error 401/500:', errorData);
         setError(errorData.detail || 'Error al actualizar el auto');
       }
     } catch (err) {
+      console.error('[EditarAuto] Exception:', err);
       if (err instanceof Error) setError(err.message);
       else setError('Error de conexión');
     } finally {
