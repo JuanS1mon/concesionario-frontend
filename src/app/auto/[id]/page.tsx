@@ -84,7 +84,7 @@ export default function AutoDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -170,7 +170,7 @@ export default function AutoDetail() {
             {/* Información del auto */}
             <div className="p-8 lg:p-12">
               <div className="mb-6">
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                <h1 className="text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                   {auto.marca?.nombre} {auto.modelo?.nombre}
                 </h1>
                 <div className="flex items-center space-x-4 text-lg text-gray-600 mb-6">
@@ -201,7 +201,7 @@ export default function AutoDetail() {
                     10% OFF
                   </span>
                 </div>
-                <p className="text-gray-600 mt-2">Precio final, incluye todos los impuestos</p>
+                <p className="text-gray-600 mt-2">Precio exclusivo con todas las garantías y servicios incluidos</p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -212,7 +212,7 @@ export default function AutoDetail() {
                   <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  Contactar Vendedor
+                  Solicitar Cotización
                 </button>
                 <button className="flex-1 border-2 border-gray-300 hover:border-red-600 text-gray-700 hover:text-red-600 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center">
                   <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +244,7 @@ export default function AutoDetail() {
 
         {/* Especificaciones adicionales */}
         <div className="mt-8 bg-white rounded-3xl shadow-xl p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Especificaciones Técnicas</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Características Premium</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             <div className="bg-gray-50 rounded-xl p-6 text-center">
               <svg className="w-10 h-10 text-red-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,7 +296,7 @@ export default function AutoDetail() {
         {/* Descripción */}
         {auto.descripcion && (
           <div className="mt-8 bg-white rounded-3xl shadow-xl p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Descripción Detallada</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Acerca de este Vehículo Premium</h2>
             <div className="prose prose-lg max-w-none">
               <p className="text-gray-700 leading-relaxed text-lg">{auto.descripcion}</p>
             </div>
@@ -310,8 +310,8 @@ export default function AutoDetail() {
           <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-8 rounded-t-3xl">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-3xl font-bold mb-2">Contactar Vendedor</h2>
-                <p className="text-red-100">Complete el formulario y nos pondremos en contacto</p>
+                <h2 className="text-3xl font-bold mb-2">Solicitar Información Premium</h2>
+                <p className="text-red-100">Complete el formulario y nuestro equipo especializado se pondrá en contacto</p>
               </div>
               <button
                 onClick={closeContactModal}
@@ -335,7 +335,7 @@ export default function AutoDetail() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Vehículo Seleccionado</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Vehículo de Interés</h3>
                   <p className="text-gray-600">{auto.marca?.nombre} {auto.modelo?.nombre} {auto.anio}</p>
                 </div>
               </div>
@@ -407,7 +407,7 @@ export default function AutoDetail() {
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
-                  Enviar Consulta
+                  Enviar Solicitud
                 </button>
               </div>
             </form>

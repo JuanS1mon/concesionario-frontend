@@ -46,6 +46,11 @@ export interface Cotizacion {
   mensaje: string;
   estado: string;
   fecha_creacion: string;
+  ciudad?: string;
+  fuente?: string;
+  preferencias_contacto?: string;
+  score: number;
+  estado_oportunidad: string;
   auto?: Auto;
 }
 
