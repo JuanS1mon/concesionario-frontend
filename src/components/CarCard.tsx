@@ -7,7 +7,7 @@ import { Auto, Estado } from '@/types';
 interface CarCardProps {
   auto: Auto;
   onClick: () => void;
-  onEdit?: (id: number) => void;
+  onEdit?: (auto: Auto) => void;
   onDelete?: (id: number) => void;
 }
 
@@ -165,7 +165,7 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEdit(auto.id);
+                    onEdit(auto);
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium"
                 >

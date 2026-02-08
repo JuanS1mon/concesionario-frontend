@@ -133,15 +133,6 @@ export default function AdminCotizaciones() {
             <p className="text-gray-600">Administra todas las solicitudes de cotización de clientes</p>
           </div>
 
-          <div className="flex justify-end mb-6">
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-base font-bold shadow-lg transition-colors"
-            >
-              Cerrar Sesión
-            </button>
-          </div>
-
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6 mb-8">
               <div className="flex items-center">

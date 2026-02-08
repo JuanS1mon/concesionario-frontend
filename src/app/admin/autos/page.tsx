@@ -3,20 +3,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PlusCircleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
 import CarCard from '@/components/CarCard';
 import FilterSidebar from '@/components/FilterSidebar';
 import AutoDetalle from '@/components/AutoDetalle';
 import AdminHero from '@/components/AdminHero';
+import AutoEditModal from '@/components/AutoEditModal';
 import { Auto, FiltrosAutos } from '@/types';
 import { autosAPI } from '@/lib/api';
 import { API_BASE_URL } from '@/lib/constants';
-import Button from '@/components/Button';
 
 export default function AdminAutos() {
   const [autos, setAutos] = useState<Auto[]>([]);
   const [filtros, setFiltros] = useState<FiltrosAutos>({});
   const [selectedAuto, setSelectedAuto] = useState<Auto | null>(null);
+  const [editingAuto, setEditingAuto] = useState<Auto | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -59,8 +60,14 @@ export default function AdminAutos() {
     setSelectedAuto(null);
   };
 
-  const handleEdit = (id: number) => {
-    router.push(`/admin/autos/${id}/editar`);
+  const handleEdit = (auto: Auto) => {
+    setEditingAuto(auto);
+    setIsEditOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditOpen(false);
+    setEditingAuto(null);
   };
 
   const handleDelete = async (id: number) => {
@@ -207,6 +214,16 @@ export default function AdminAutos() {
           onClose={closeModal}
         />
       )}
+
+      <AutoEditModal
+        auto={editingAuto}
+        isOpen={isEditOpen}
+        onClose={closeEditModal}
+        onSaved={() => {
+          loadAutos();
+          closeEditModal();
+        }}
+      />
     </div>
   );
 }
