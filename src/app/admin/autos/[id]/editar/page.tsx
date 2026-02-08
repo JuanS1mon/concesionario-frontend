@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { PencilSquareIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, PhotoIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { Marca, Modelo, Estado, Auto } from '@/types';
 import { API_BASE_URL } from '@/lib/constants';
 import FormField from '@/components/FormField';
 import Button from '@/components/Button';
+import AdminHero from '@/components/AdminHero';
 
 console.log('📄 Archivo page.tsx cargado correctamente');
 
@@ -15,6 +16,7 @@ export default function EditarAuto() {
   const [loadingData, setLoadingData] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [heroVisible, setHeroVisible] = useState(true);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
@@ -378,12 +380,37 @@ export default function EditarAuto() {
 
   console.log('Renderizando formulario principal');
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-radial from-blue-50 to-blue-100 rounded-2xl shadow-2xl border border-blue-100 p-8 relative animate-fade-in">
-      <div className="flex items-center mb-8 gap-3">
-        <PencilSquareIcon className="h-10 w-10 text-gray-700" />
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Editar Auto</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30 flex gap-2">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-8">
+
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Editar Auto"
+          description="Edita los datos del vehiculo seleccionado"
+          buttonText="Ver Inventario"
+          buttonHref="/admin/autos"
+          buttonIcon={<PhotoIcon className="h-5 w-5" />}
+        />
+      )}
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-2xl mx-auto bg-radial from-blue-50 to-blue-100 rounded-2xl shadow-2xl border border-blue-100 p-8 relative animate-fade-in">
+          <div className="flex items-center mb-8 gap-3">
+            <PencilSquareIcon className="h-10 w-10 text-gray-700" />
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Editar Auto</h1>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-4">
                   <p className="text-red-800">{error}</p>
@@ -649,6 +676,8 @@ export default function EditarAuto() {
                 </Button>
               </div>
             </form>
+        </div>
+      </div>
     </div>
   );
 }

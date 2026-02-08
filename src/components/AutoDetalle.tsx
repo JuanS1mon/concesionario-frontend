@@ -20,9 +20,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
     email: '',
     telefono: '',
     mensaje: '',
-    ciudad: '',
-    fuente: 'web',
-    preferencias_contacto: 'email'
+    ciudad: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,9 +40,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
         email: '',
         telefono: '',
         mensaje: '',
-        ciudad: '',
-        fuente: 'web',
-        preferencias_contacto: 'email'
+        ciudad: ''
       });
     } catch (error) {
       alert('Error al enviar la cotización. Inténtalo de nuevo.');
@@ -83,11 +79,11 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-3xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Header Premium */}
-        <div className="bg-gradient-to-r from-blue-700 to-gray-900 text-white p-8 rounded-t-3xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-transparent to-gray-800/20"></div>
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8 rounded-t-3xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/20"></div>
           <div className="relative flex justify-between items-center">
             <div>
               <h2 className="text-3xl font-bold mb-2">
@@ -105,7 +101,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-blue-200 transition-colors p-2 rounded-full hover:bg-white/10"
+              className="text-white hover:text-gray-200 transition-colors p-2 rounded-full hover:bg-white/10"
               aria-label="Cerrar detalles del auto"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,7 +287,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
 
               {/* Botones de acción */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <button onClick={() => setShowQuotationModal(true)} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center" aria-label="Solicitar cotización">
+                <button onClick={() => setShowQuotationModal(true)} className="w-full bg-gradient-to-r from-blue-700 via-black to-black hover:from-blue-600 hover:via-black hover:to-black text-white px-6 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center" aria-label="Solicitar cotización">
                   <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
@@ -395,14 +391,14 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
 
       {/* Modal de cotización */}
       {showQuotationModal && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowQuotationModal(false)}>
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-blue-700 to-gray-900 text-white p-6 rounded-t-3xl">
+            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6 rounded-t-3xl">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">Solicitar Cotización</h3>
                 <button
                   onClick={() => setShowQuotationModal(false)}
-                  className="text-white hover:text-blue-200 transition-colors"
+                  className="text-white hover:text-gray-200 transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -449,31 +445,6 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                     onChange={(e) => setQuotationForm({...quotationForm, ciudad: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">¿Cómo nos conociste?</label>
-                  <select
-                    value={quotationForm.fuente}
-                    onChange={(e) => setQuotationForm({...quotationForm, fuente: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="web">Sitio web</option>
-                    <option value="recomendacion">Recomendación</option>
-                    <option value="redes_sociales">Redes sociales</option>
-                    <option value="otro">Otro</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferencia de contacto</label>
-                  <select
-                    value={quotationForm.preferencias_contacto}
-                    onChange={(e) => setQuotationForm({...quotationForm, preferencias_contacto: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="email">Email</option>
-                    <option value="telefono">Teléfono</option>
-                    <option value="email,telefono">Ambos</option>
-                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>

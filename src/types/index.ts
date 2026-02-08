@@ -51,6 +51,9 @@ export interface Cotizacion {
   preferencias_contacto?: string;
   score: number;
   estado_oportunidad: string;
+  ip?: string;
+  ubicacion?: string;
+  notas_admin?: string;
   auto?: Auto;
 }
 
