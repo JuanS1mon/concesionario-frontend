@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta } from '@/types';
+import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate } from '@/types';
 import { API_BASE_URL } from './constants';
 
 export const api = axios.create({
@@ -81,4 +81,37 @@ export const solicitudesVentaAPI = {
 // Funciones de API para autenticación
 export const authAPI = {
   login: (data: { email: string; password: string }) => api.post('/auth/login/', data),
+};
+
+// Funciones de API para clientes (CRM)
+export const clientesAPI = {
+  getAll: (params?: { estado?: string; calificacion?: string; activo?: boolean; busqueda?: string }) =>
+    api.get('/clientes/', { params }),
+  getById: (id: number) => api.get(`/clientes/${id}/`),
+  create: (data: Partial<Cliente>) => api.post('/clientes/', data),
+  update: (id: number, data: Partial<Cliente>) => api.put(`/clientes/${id}/`, data),
+  delete: (id: number) => api.delete(`/clientes/${id}/`),
+  getEstadisticas: () => api.get('/clientes/estadisticas'),
+};
+
+// Funciones de API para oportunidades (CRM)
+export const oportunidadesAPI = {
+  getAll: (params?: { etapa?: string; prioridad?: string; cliente_id?: number }) =>
+    api.get('/oportunidades/', { params }),
+  getById: (id: number) => api.get(`/oportunidades/${id}/`),
+  create: (data: Partial<Oportunidad>) => api.post('/oportunidades/', data),
+  update: (id: number, data: Partial<Oportunidad>) => api.put(`/oportunidades/${id}/`, data),
+  delete: (id: number) => api.delete(`/oportunidades/${id}/`),
+  getEstadisticas: () => api.get('/oportunidades/estadisticas'),
+};
+
+// Funciones de API para ventas
+export const ventasAPI = {
+  getAll: (params?: { estado?: string; cliente_id?: number; fecha_desde?: string; fecha_hasta?: string }) =>
+    api.get('/ventas/', { params }),
+  getById: (id: number) => api.get(`/ventas/${id}/`),
+  create: (data: VentaCreate) => api.post('/ventas/', data),
+  update: (id: number, data: Partial<Venta>) => api.put(`/ventas/${id}/`, data),
+  delete: (id: number) => api.delete(`/ventas/${id}/`),
+  getEstadisticas: () => api.get('/ventas/estadisticas'),
 };

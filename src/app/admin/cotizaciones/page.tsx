@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ChatBubbleLeftRightIcon, EyeIcon, EyeSlashIcon, PhoneIcon, HeartIcon, CurrencyDollarIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/solid';
+import { useMemo, useState, useEffect } from 'react';
+import { ArrowDownTrayIcon, ChatBubbleLeftRightIcon, EyeIcon, EyeSlashIcon, PhoneIcon, HeartIcon, CurrencyDollarIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { Cotizacion } from '@/types';
 import { API_BASE_URL } from '@/lib/constants';
+import { clientesAPI } from '@/lib/api';
+import { UserPlusIcon } from '@heroicons/react/24/solid';
 import AdminHero from '@/components/AdminHero';
 import AutoDetalle from '@/components/AutoDetalle';
 import Image from 'next/image';
@@ -17,6 +19,9 @@ export default function AdminCotizaciones() {
   const [selectedAuto, setSelectedAuto] = useState<any | null>(null);
   const [selectedCotizacion, setSelectedCotizacion] = useState<Cotizacion | null>(null);
   const [notas, setNotas] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [estadoFilter, setEstadoFilter] = useState('all');
+  const [convirtiendo, setConvirtiendo] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -89,8 +94,209 @@ export default function AdminCotizaciones() {
     }
   };
 
+  const parseEstadoOportunidad = (valor?: string | null) => {
+    if (!valor) return [] as string[];
+    if (valor.trim().toLowerCase() === 'nuevo') return [] as string[];
+    return valor
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
+  const formatEstadoOportunidad = (estados: string[]) => {
+    if (estados.length === 0) return 'Nuevo';
+    return estados.join(', ');
+  };
+
+  const toggleEstadoOportunidad = async (estado: string) => {
+    if (!selectedCotizacion) return;
+    try {
+      const actuales = parseEstadoOportunidad(selectedCotizacion.estado_oportunidad);
+      const existe = actuales.includes(estado);
+      const actualizados = existe
+        ? actuales.filter((item) => item !== estado)
+        : [...actuales, estado];
+      const nuevoEstado = formatEstadoOportunidad(actualizados);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/cotizaciones/${selectedCotizacion.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ estado_oportunidad: nuevoEstado }),
+      });
+      if (response.ok) {
+        setCotizaciones((prev) =>
+          prev.map((c) =>
+            c.id === selectedCotizacion.id ? { ...c, estado_oportunidad: nuevoEstado } : c
+          )
+        );
+        setSelectedCotizacion({ ...selectedCotizacion, estado_oportunidad: nuevoEstado });
+      } else {
+        alert('Error al actualizar el estado de oportunidad');
+      }
+    } catch (err) {
+      alert('Error de conexión');
+    }
+  };
+
+  const convertirACliente = async () => {
+    if (!selectedCotizacion) return;
+    setConvirtiendo(true);
+    try {
+      const nombreCompleto = selectedCotizacion.nombre_usuario.trim();
+      const partes = nombreCompleto.split(' ');
+      const nombre = partes[0] || nombreCompleto;
+      const apellido = partes.slice(1).join(' ') || '-';
+
+      const autoInfo = selectedCotizacion.auto
+        ? `${selectedCotizacion.auto.marca?.nombre || ''} ${selectedCotizacion.auto.modelo?.nombre || ''}`.trim()
+        : undefined;
+
+      const clienteData: Partial<import('@/types').Cliente> = {
+        nombre,
+        apellido,
+        email: selectedCotizacion.email,
+        telefono: selectedCotizacion.telefono || undefined,
+        ciudad: selectedCotizacion.ciudad || undefined,
+        fuente: 'cotizacion',
+        tipo_vehiculo_interes: autoInfo || undefined,
+        notas: `Convertido desde cotización #${selectedCotizacion.id}. Mensaje original: ${selectedCotizacion.mensaje}`,
+        ip_registro: selectedCotizacion.ip || undefined,
+        ubicacion_geo: selectedCotizacion.ubicacion || undefined,
+      };
+
+      await clientesAPI.create(clienteData);
+      alert(`Cliente "${nombre} ${apellido}" creado exitosamente. Puedes verlo en el CRM.`);
+    } catch (err: any) {
+      if (err?.response?.status === 400 || err?.response?.status === 422) {
+        alert('Error: Verifica que los datos del cliente sean válidos. Es posible que ya exista un cliente con ese email.');
+      } else {
+        alert('Error al crear el cliente');
+      }
+    } finally {
+      setConvirtiendo(false);
+    }
+  };
+
   const closeModal = () => {
     setSelectedAuto(null);
+  };
+
+  const estadosDisponibles = useMemo(() => {
+    const estados = new Set<string>();
+    cotizaciones.forEach((cotizacion) => {
+      if (cotizacion.estado) {
+        estados.add(cotizacion.estado);
+      }
+    });
+    return Array.from(estados).sort((a, b) => a.localeCompare(b));
+  }, [cotizaciones]);
+
+  const filteredCotizaciones = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return cotizaciones.filter((cotizacion) => {
+      if (estadoFilter !== 'all' && (cotizacion.estado || '').toLowerCase() !== estadoFilter.toLowerCase()) {
+        return false;
+      }
+
+      if (!term) return true;
+
+      const autoMarca = cotizacion.auto?.marca?.nombre || '';
+      const autoModelo = cotizacion.auto?.modelo?.nombre || '';
+      const autoAnio = cotizacion.auto?.anio?.toString() || '';
+      const values = [
+        cotizacion.id?.toString(),
+        cotizacion.nombre_usuario,
+        cotizacion.email,
+        cotizacion.telefono,
+        cotizacion.mensaje,
+        cotizacion.ciudad,
+        cotizacion.ip,
+        cotizacion.ubicacion,
+        cotizacion.estado,
+        cotizacion.estado_oportunidad,
+        autoMarca,
+        autoModelo,
+        autoAnio,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return values.includes(term);
+    });
+  }, [cotizaciones, searchTerm, estadoFilter]);
+
+  const exportCotizacionesToXls = () => {
+    if (filteredCotizaciones.length === 0) {
+      alert('No hay cotizaciones para exportar con los filtros actuales.');
+      return;
+    }
+
+    const headers = [
+      'ID',
+      'Cliente',
+      'Email',
+      'Telefono',
+      'Estado',
+      'Estado oportunidad',
+      'Auto',
+      'Ano',
+      'Fecha',
+      'IP',
+      'Ubicacion',
+      'Mensaje',
+    ];
+
+    const rows = filteredCotizaciones.map((cotizacion) => [
+      cotizacion.id,
+      cotizacion.nombre_usuario,
+      cotizacion.email,
+      cotizacion.telefono || '',
+      cotizacion.estado || '',
+      cotizacion.estado_oportunidad || '',
+      `${cotizacion.auto?.marca?.nombre || ''} ${cotizacion.auto?.modelo?.nombre || ''}`.trim(),
+      cotizacion.auto?.anio?.toString() || '',
+      new Date(cotizacion.fecha_creacion).toLocaleDateString(),
+      cotizacion.ip || '',
+      cotizacion.ubicacion || '',
+      cotizacion.mensaje || '',
+    ]);
+
+    const escapeHtml = (value: string | number) =>
+      String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\r?\n/g, ' ');
+
+    const tableRows = [headers, ...rows]
+      .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`)
+      .join('');
+
+    const tableHtml = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <table>${tableRows}</table>
+  </body>
+</html>`;
+
+    const blob = new Blob([tableHtml], {
+      type: 'application/vnd.ms-excel;charset=utf-8;',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cotizaciones_${new Date().toISOString().slice(0, 10)}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -133,6 +339,48 @@ export default function AdminCotizaciones() {
             <p className="text-gray-600">Administra todas las solicitudes de cotización de clientes</p>
           </div>
 
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Buscar</label>
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Nombre, email, telefono, auto, mensaje, ciudad..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                />
+              </div>
+              <div className="w-full lg:w-60">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Estado</label>
+                <select
+                  value={estadoFilter}
+                  onChange={(e) => setEstadoFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                >
+                  <option value="all">Todos</option>
+                  {estadosDisponibles.map((estado) => (
+                    <option key={estado} value={estado}>
+                      {estado}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="w-full lg:w-auto lg:ml-auto flex flex-col items-start lg:items-end gap-2">
+                <button
+                  onClick={exportCotizacionesToXls}
+                  className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
+                  title="Exportar a XLS"
+                  aria-label="Exportar a XLS"
+                >
+                  <ArrowDownTrayIcon className="w-5 h-5" />
+                </button>
+                <p className="text-xs text-gray-500">
+                  Mostrando {filteredCotizaciones.length} de {cotizaciones.length}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6 mb-8">
               <div className="flex items-center">
@@ -154,6 +402,8 @@ export default function AdminCotizaciones() {
                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Auto</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Teléfono</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Oportunidad</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Fecha</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">IP</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Ubicación</th>
@@ -161,7 +411,7 @@ export default function AdminCotizaciones() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {cotizaciones.map((cotizacion) => (
+                  {filteredCotizaciones.map((cotizacion) => (
                     <tr key={cotizacion.id} className="hover:bg-gray-50 transition-all cursor-pointer" onClick={() => handleCotizacionClick(cotizacion)}>
                       <td className="px-6 py-4 whitespace-nowrap text-base font-bold text-gray-900">{cotizacion.id}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{cotizacion.nombre_usuario}</td>
@@ -182,6 +432,8 @@ export default function AdminCotizaciones() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{cotizacion.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{cotizacion.telefono}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{cotizacion.estado || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{cotizacion.estado_oportunidad || 'Nuevo'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{new Date(cotizacion.fecha_creacion).toLocaleDateString()}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{cotizacion.ip || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">{cotizacion.ubicacion || 'N/A'}</td>
@@ -200,6 +452,13 @@ export default function AdminCotizaciones() {
               </svg>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay cotizaciones registradas</h3>
               <p className="text-gray-600">Las cotizaciones aparecerán aquí cuando los clientes soliciten información sobre los autos.</p>
+            </div>
+          )}
+
+          {cotizaciones.length > 0 && filteredCotizaciones.length === 0 && (
+            <div className="text-center py-10 bg-gray-50 rounded-2xl mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay resultados con estos filtros</h3>
+              <p className="text-gray-600">Ajusta la búsqueda o selecciona otro estado.</p>
             </div>
           )}
         </div>
@@ -311,18 +570,70 @@ export default function AdminCotizaciones() {
               <div className="mt-6">
                 <h4 className="text-lg font-semibold text-black mb-2">Opciones de Análisis</h4>
                 <div className="flex gap-2 flex-wrap">
-                  <button className="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded" title="Marcar esta cotización como contactada" aria-label="Marcar como contactado">
+                  <button
+                    onClick={() => toggleEstadoOportunidad('Contactado')}
+                    className={`text-white p-2 rounded transition-colors ${
+                      parseEstadoOportunidad(selectedCotizacion.estado_oportunidad).includes('Contactado')
+                        ? 'bg-yellow-900'
+                        : 'bg-yellow-500 hover:bg-yellow-600'
+                    }`}
+                    title="Marcar esta cotización como contactada"
+                    aria-label="Marcar como contactado"
+                  >
                     <PhoneIcon className="w-5 h-5" />
                   </button>
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded" title="Marcar como cliente interesado" aria-label="Marcar como interesado">
+                  <button
+                    onClick={() => toggleEstadoOportunidad('Interesado')}
+                    className={`text-white p-2 rounded transition-colors ${
+                      parseEstadoOportunidad(selectedCotizacion.estado_oportunidad).includes('Interesado')
+                        ? 'bg-blue-900'
+                        : 'bg-blue-500 hover:bg-blue-600'
+                    }`}
+                    title="Marcar como cliente interesado"
+                    aria-label="Marcar como interesado"
+                  >
                     <HeartIcon className="w-5 h-5" />
                   </button>
-                  <button className="bg-green-500 hover:bg-green-600 text-white p-2 rounded" title="Marcar como venta potencial" aria-label="Marcar como venta potencial">
+                  <button
+                    onClick={() => toggleEstadoOportunidad('Venta potencial')}
+                    className={`text-white p-2 rounded transition-colors ${
+                      parseEstadoOportunidad(selectedCotizacion.estado_oportunidad).includes('Venta potencial')
+                        ? 'bg-green-900'
+                        : 'bg-green-500 hover:bg-green-600'
+                    }`}
+                    title="Marcar como venta potencial"
+                    aria-label="Marcar como venta potencial"
+                  >
                     <CurrencyDollarIcon className="w-5 h-5" />
                   </button>
-                  <button className="bg-red-500 hover:bg-red-600 text-white p-2 rounded" title="Marcar como descartada" aria-label="Marcar como descartado">
+                  <button
+                    onClick={() => toggleEstadoOportunidad('Descartado')}
+                    className={`text-white p-2 rounded transition-colors ${
+                      parseEstadoOportunidad(selectedCotizacion.estado_oportunidad).includes('Descartado')
+                        ? 'bg-red-900'
+                        : 'bg-red-500 hover:bg-red-600'
+                    }`}
+                    title="Marcar como descartada"
+                    aria-label="Marcar como descartado"
+                  >
                     <XMarkIcon className="w-5 h-5" />
                   </button>
+                </div>
+
+                {/* Botón Convertir a Cliente */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={convertirACliente}
+                    disabled={convirtiendo}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                    title="Crear un registro de cliente en el CRM con los datos de esta cotización"
+                  >
+                    <UserPlusIcon className="w-5 h-5" />
+                    {convirtiendo ? 'Creando cliente...' : 'Convertir a Cliente (CRM)'}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-1 text-center">
+                    Crea un cliente en el CRM con: {selectedCotizacion.nombre_usuario} / {selectedCotizacion.email}
+                  </p>
                 </div>
               </div>
             </div>

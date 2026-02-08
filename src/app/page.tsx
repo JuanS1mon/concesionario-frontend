@@ -14,6 +14,7 @@ export default function LandingPage() {
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCatalogoModalOpen, setIsCatalogoModalOpen] = useState(false);
+  const [isCRMModalOpen, setIsCRMModalOpen] = useState(false);
 
   // Ref para la sección de características
   const featuresRef = useRef(null);
@@ -214,6 +215,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={isFeaturesInView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.8, y: 20 }}
               transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+              onClick={() => setIsCRMModalOpen(true)}
             >
               <motion.div
                 className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4"
@@ -723,6 +725,198 @@ export default function LandingPage() {
                     >
                       <button
                         onClick={() => setIsCatalogoModalOpen(false)}
+                        className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                      >
+                        Cerrar
+                      </button>
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+      {/* Modal Gestión de Clientes y Oportunidades */}
+      {isCRMModalOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 bg-black bg-opacity-70 backdrop-blur-md flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => setIsCRMModalOpen(false)}
+        >
+          <motion.div
+            className="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-hidden shadow-2xl border border-gray-200"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-br from-emerald-800 via-green-700 to-teal-900 text-white p-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/20 to-teal-900/20"></div>
+              <div className="relative z-10 flex justify-between items-center">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <h2 className="text-4xl font-bold mb-2 tracking-tight">Gestión de Clientes y Oportunidades</h2>
+                  <p className="text-emerald-200 text-lg">CRM integrado para concesionarias: seguimiento completo del ciclo de venta</p>
+                </motion.div>
+                <motion.button
+                  onClick={() => setIsCRMModalOpen(false)}
+                  className="text-white hover:text-gray-300 transition-all duration-200 p-3 rounded-full hover:bg-white/10 hover:scale-110"
+                  aria-label="Cerrar modal"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="p-4 md:p-8 max-h-[60vh] md:max-h-none overflow-y-auto">
+              <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
+                {/* Imagen de muestra */}
+                <motion.div
+                  className="flex-1"
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  <div className="bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl p-4 md:p-6 shadow-lg border border-green-200">
+                    <div className="text-center text-gray-600 mb-4 md:mb-6">
+                      <h4 className="text-base md:text-lg font-semibold text-gray-800 mb-2">Vista Previa del CRM</h4>
+                      <p className="text-xs md:text-sm text-gray-500">Gestión integral de relaciones con clientes</p>
+                    </div>
+                    <div className="relative w-full h-48 md:h-80 rounded-xl overflow-hidden shadow-xl border border-gray-200">
+                      <Image
+                        src="/img/CRM.jpg"
+                        alt="Vista previa del sistema CRM de gestión de clientes"
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Descripción */}
+                <motion.div
+                  className="flex-1"
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">¿Qué incluye el CRM?</h3>
+                  <div className="space-y-4 md:space-y-6 text-gray-700">
+                    <p className="text-base md:text-lg leading-relaxed">
+                      Nuestro módulo de CRM permite a las concesionarias capturar, calificar y dar seguimiento
+                      a cada cliente potencial durante todo el proceso de venta, desde el primer contacto hasta el cierre.
+                    </p>
+
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 md:p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
+                      <h4 className="text-lg md:text-xl font-semibold text-green-900 mb-3 md:mb-4">Características Principales:</h4>
+                      <div className="space-y-3 text-green-800">
+                        <motion.div
+                          className="flex items-center"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.5 }}
+                        >
+                          <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">Captura automática de leads desde cotizaciones</span>
+                        </motion.div>
+                        <motion.div
+                          className="flex items-center"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.6 }}
+                        >
+                          <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">Calificación y scoring inteligente de clientes</span>
+                        </motion.div>
+                        <motion.div
+                          className="flex items-center"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.7 }}
+                        >
+                          <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="font-medium"><span className="relative group/tip cursor-help border-b border-dashed border-green-600">Pipeline<span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg z-10">Embudo de ventas: el recorrido del cliente desde el primer contacto hasta el cierre de la venta.</span></span> de oportunidades con etapas personalizables</span>
+                        </motion.div>
+                        <motion.div
+                          className="flex items-center"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.8 }}
+                        >
+                          <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">Métricas de conversión y tasa de cierre en tiempo real</span>
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    <motion.p
+                      className="text-lg leading-relaxed"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6, delay: 0.9 }}
+                    >
+                      Desde cotizaciones hasta oportunidades ganadas, el CRM centraliza la información
+                      de cada prospecto para que ningún lead se pierda y cada vendedor tenga visibilidad
+                      completa del embudo de ventas.
+                    </motion.p>
+                  </div>
+
+                  <motion.div
+                    className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 md:gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.0 }}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Link
+                        href="/demo"
+                        className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg transition-all duration-300 shadow-lg hover:shadow-xl block text-center"
+                        onClick={() => setIsCRMModalOpen(false)}
+                      >
+                        Ver Demo Completa
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <button
+                        onClick={() => setIsCRMModalOpen(false)}
                         className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg transition-all duration-300 shadow-md hover:shadow-lg"
                       >
                         Cerrar

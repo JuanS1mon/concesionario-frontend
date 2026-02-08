@@ -102,3 +102,178 @@ export interface FiltrosAutos {
   precio_max?: number;
   en_stock?: boolean;
 }
+
+// CRM - Clientes
+export interface Cliente {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  ciudad?: string;
+  direccion?: string;
+  fuente?: string;
+  score: number;
+  calificacion: string; // frio, tibio, caliente
+  estado: string; // nuevo, contactado, calificado, cliente, perdido
+  preferencias_contacto?: string;
+  presupuesto_min?: number;
+  presupuesto_max?: number;
+  tipo_vehiculo_interes?: string;
+  notas?: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  ultimo_contacto?: string;
+  ip_registro?: string;
+  ubicacion_geo?: string;
+  total_oportunidades?: number;
+}
+
+// CRM - Oportunidades
+export interface Oportunidad {
+  id: number;
+  cliente_id: number;
+  auto_id?: number;
+  titulo: string;
+  descripcion?: string;
+  etapa: string; // prospecto, contacto, evaluacion, negociacion, cierre, ganada, perdida
+  probabilidad: number;
+  valor_estimado?: number;
+  prioridad: string; // baja, media, alta, urgente
+  motivo_perdida?: string;
+  notas?: string;
+  proxima_accion?: string;
+  fecha_proxima_accion?: string;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  fecha_cierre?: string;
+  cliente?: ClienteResumen;
+  auto?: Auto;
+}
+
+export interface ClienteResumen {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  calificacion: string;
+}
+
+// CRM - Estadísticas
+export interface EstadisticasClientes {
+  total: number;
+  por_estado: {
+    nuevo: number;
+    contactado: number;
+    calificado: number;
+    cliente: number;
+    perdido: number;
+  };
+  por_calificacion: {
+    frio: number;
+    tibio: number;
+    caliente: number;
+  };
+  score_promedio: number;
+}
+
+export interface EstadisticasOportunidades {
+  total: number;
+  por_etapa: {
+    prospecto: number;
+    contacto: number;
+    evaluacion: number;
+    negociacion: number;
+    cierre: number;
+    ganada: number;
+    perdida: number;
+  };
+  por_prioridad: {
+    baja: number;
+    media: number;
+    alta: number;
+    urgente: number;
+  };
+  valor_pipeline: number;
+  valor_ganado: number;
+  tasa_conversion: number;
+}
+
+// Ventas
+export interface Venta {
+  id: number;
+  cliente_id: number;
+  auto_vendido_id: number;
+  precio_venta: number;
+  auto_tomado_id?: number;
+  precio_toma?: number;
+  es_parte_pago: boolean;
+  diferencia?: number;
+  ganancia_estimada?: number;
+  cotizacion_id?: number;
+  oportunidad_id?: number;
+  estado: string; // pendiente, completada, cancelada
+  notas?: string;
+  fecha_venta: string;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  cliente?: ClienteResumen;
+  auto_vendido?: Auto;
+  auto_tomado?: Auto;
+  cotizacion?: CotizacionResumen;
+  oportunidad?: OportunidadResumen;
+}
+
+export interface CotizacionResumen {
+  id: number;
+  nombre_usuario: string;
+  email: string;
+  estado: string;
+}
+
+export interface OportunidadResumen {
+  id: number;
+  titulo: string;
+  etapa: string;
+  valor_estimado?: number;
+}
+
+export interface AutoTomadoData {
+  marca_id: number;
+  modelo_id: number;
+  anio: number;
+  tipo: string;
+  precio: number;
+  descripcion?: string;
+}
+
+export interface VentaCreate {
+  cliente_id: number;
+  auto_vendido_id: number;
+  precio_venta: number;
+  precio_toma?: number;
+  es_parte_pago?: boolean;
+  ganancia_estimada?: number;
+  cotizacion_id?: number;
+  oportunidad_id?: number;
+  estado?: string;
+  notas?: string;
+  fecha_venta?: string;
+  auto_tomado_data?: AutoTomadoData;
+}
+
+export interface EstadisticasVentas {
+  total: number;
+  por_estado: {
+    pendiente: number;
+    completada: number;
+    cancelada: number;
+  };
+  total_vendido: number;
+  total_tomado: number;
+  total_diferencia: number;
+  ventas_con_toma: number;
+  ganancia_estimada_total: number;
+}
