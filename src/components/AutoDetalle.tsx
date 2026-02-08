@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Auto, Imagen } from '@/types';
+import { Auto } from '@/types';
 import { cotizacionesAPI } from '@/lib/api';
 
 interface AutoDetalleProps {
@@ -23,6 +23,8 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
     ciudad: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleQuotationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,9 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
         auto_id: auto.id,
         estado: 'nuevo'
       });
-      alert('Cotización enviada exitosamente. Nos pondremos en contacto pronto.');
+      setSuccessMessage('Listo, recibimos tu cotizacion. En breve un asesor se contactara contigo.');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 4500);
       setShowQuotationModal(false);
       setQuotationForm({
         nombre_usuario: '',
@@ -68,14 +72,24 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
     setSelectedImageIndex(index);
   };
 
-  const getImageUrl = (url: string, quality: 'low' | 'medium' | 'high' = 'medium') => {
-    // Asumiendo URLs de Cloudinary, agregar parámetros de calidad
-    if (url.includes('cloudinary.com')) {
-      const qualityParam = quality === 'low' ? 'q_50' : quality === 'medium' ? 'q_75' : 'q_100';
-      // Insertar el parámetro de calidad en la URL
-      return url.replace('/upload/', `/upload/${qualityParam}/`);
+  const getImageUrl = (
+    url: string,
+    options: { quality?: number; width?: number } = {}
+  ) => {
+    if (!url.includes('cloudinary.com') || !url.includes('/upload/')) {
+      return url;
     }
-    return url;
+
+    const transforms: string[] = [];
+    if (options.width) {
+      transforms.push(`w_${options.width}`);
+    }
+    if (options.quality) {
+      transforms.push(`q_${options.quality}`);
+    }
+    transforms.push('f_auto');
+
+    return url.replace('/upload/', `/upload/${transforms.join(',')}/`);
   };
 
   return (
@@ -121,7 +135,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                 <div className="relative rounded-2xl overflow-hidden shadow-lg bg-white h-[45vh] lg:h-[70vh] mb-4">
                   {auto.imagenes && auto.imagenes.length > 0 && auto.imagenes[selectedImageIndex]?.url ? (
                     <Image
-                      src={getImageUrl(auto.imagenes[selectedImageIndex].url, 'medium')}
+                      src={getImageUrl(auto.imagenes[selectedImageIndex].url, { width: 1200, quality: 75 })}
                       alt={`${auto.marca?.nombre} ${auto.modelo?.nombre} - Imagen ${selectedImageIndex + 1}`}
                       fill
                       className="object-contain cursor-pointer"
@@ -197,7 +211,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                           aria-label={`Ver imagen ${index + 1}`}
                         >
                           <Image
-                            src={getImageUrl(imagen.url, 'low')}
+                            src={getImageUrl(imagen.url, { width: 200, quality: 50 })}
                             alt={`Miniatura ${index + 1}`}
                             width={64}
                             height={64}
@@ -314,7 +328,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
             setZoom(Math.max(0.5, Math.min(3, zoom + delta)));
           }} onClick={(e) => e.stopPropagation()}>
             <Image
-              src={getImageUrl(auto.imagenes[selectedImageIndex].url, 'high')}
+              src={getImageUrl(auto.imagenes[selectedImageIndex].url, { width: 2000, quality: 90 })}
               alt={`${auto.marca?.nombre} ${auto.modelo?.nombre} - Imagen ${selectedImageIndex + 1}`}
               width={1200}
               height={800}
@@ -399,6 +413,7 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                 <button
                   onClick={() => setShowQuotationModal(false)}
                   className="text-white hover:text-gray-200 transition-colors"
+                  aria-label="Cerrar solicitud de cotizacion"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -407,10 +422,29 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
               </div>
             </div>
             <div className="p-6 overflow-y-auto max-h-[calc(95vh-120px)]">
+              {showSuccessMessage && (
+                <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold">Solicitud enviada</p>
+                      <p className="text-sm text-emerald-700">{successMessage}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowSuccessMessage(false)}
+                      className="text-emerald-700 hover:text-emerald-900 text-sm font-semibold"
+                      aria-label="Cerrar mensaje de confirmacion"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
+              )}
               <form onSubmit={handleQuotationSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                  <label htmlFor="cotizacion-nombre" className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
                   <input
+                    id="cotizacion-nombre"
                     type="text"
                     required
                     value={quotationForm.nombre_usuario}
@@ -419,8 +453,9 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <label htmlFor="cotizacion-email" className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                   <input
+                    id="cotizacion-email"
                     type="email"
                     required
                     value={quotationForm.email}
@@ -429,8 +464,9 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <label htmlFor="cotizacion-telefono" className="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
                   <input
+                    id="cotizacion-telefono"
                     type="tel"
                     value={quotationForm.telefono}
                     onChange={(e) => setQuotationForm({...quotationForm, telefono: e.target.value})}
@@ -438,8 +474,9 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                  <label htmlFor="cotizacion-ciudad" className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
                   <input
+                    id="cotizacion-ciudad"
                     type="text"
                     value={quotationForm.ciudad}
                     onChange={(e) => setQuotationForm({...quotationForm, ciudad: e.target.value})}
@@ -447,8 +484,9 @@ export default function AutoDetalle({ auto, onClose }: AutoDetalleProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
+                  <label htmlFor="cotizacion-mensaje" className="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
                   <textarea
+                    id="cotizacion-mensaje"
                     value={quotationForm.mensaje}
                     onChange={(e) => setQuotationForm({...quotationForm, mensaje: e.target.value})}
                     rows={3}

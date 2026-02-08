@@ -37,6 +37,13 @@ export interface Auto {
   imagenes: Imagen[];
 }
 
+export interface PaginatedAutos {
+  items: Auto[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
 export interface Cotizacion {
   id: number;
   nombre_usuario: string;

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import useSWR from 'swr';
 import { PlusCircleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import CarCard from '@/components/CarCard';
@@ -8,26 +9,37 @@ import FilterSidebar from '@/components/FilterSidebar';
 import AutoDetalle from '@/components/AutoDetalle';
 import AdminHero from '@/components/AdminHero';
 import AutoEditModal from '@/components/AutoEditModal';
-import { Auto, FiltrosAutos } from '@/types';
+import { Auto, FiltrosAutos, PaginatedAutos } from '@/types';
 import { autosAPI } from '@/lib/api';
 import { API_BASE_URL } from '@/lib/constants';
 
 export default function AdminAutos() {
-  const [autos, setAutos] = useState<Auto[]>([]);
   const [filtros, setFiltros] = useState<FiltrosAutos>({});
+  const [debouncedFiltros, setDebouncedFiltros] = useState<FiltrosAutos>({});
   const [selectedAuto, setSelectedAuto] = useState<Auto | null>(null);
   const [editingAuto, setEditingAuto] = useState<Auto | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
   const router = useRouter();
 
   useEffect(() => {
     checkAuth();
-    loadAutos();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedFiltros(filtros);
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
   }, [filtros]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedFiltros]);
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -36,21 +48,28 @@ export default function AdminAutos() {
     }
   };
 
-  const loadAutos = useCallback(async () => {
-    try {
-      setLoading(true);
-      console.log('[AdminAutos] Cargando autos con filtros:', filtros);
-      const response = await autosAPI.getAll(filtros);
-      console.log('[AdminAutos] Respuesta de API:', response.data.length, 'autos');
-      setAutos(response.data);
-      setError(null);
-    } catch (err) {
-      setError('Error al cargar los autos');
-      console.error('Error loading autos:', err);
-    } finally {
-      setLoading(false);
+  const autosKey = useMemo(() => (
+    ['admin-autos-paginated', debouncedFiltros, page, pageSize]
+  ), [debouncedFiltros, page, pageSize]);
+
+  const { data, error, isLoading, isValidating, mutate } = useSWR<PaginatedAutos>(
+    autosKey,
+    () => autosAPI.getPaginated({
+      ...debouncedFiltros,
+      skip: (page - 1) * pageSize,
+      limit: pageSize,
+    }).then((response) => response.data),
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
     }
-  }, [filtros]);
+  );
+
+  const autosData = data?.items ?? [];
+  const totalAutos = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalAutos / pageSize));
+  const isInitialLoading = !data && isLoading;
+  const errorMessage = error ? 'Error al cargar los autos' : null;
 
   const handleAutoClick = (auto: Auto) => {
     setSelectedAuto(auto);
@@ -88,12 +107,22 @@ export default function AdminAutos() {
       });
 
       if (response.ok) {
-        setAutos(autos.filter(auto => auto.id !== id));
+        mutate((current) => {
+          if (!current) {
+            return current;
+          }
+          return {
+            ...current,
+            items: current.items.filter((auto) => auto.id !== id),
+            total: Math.max(0, current.total - 1),
+          };
+        }, false);
+        mutate();
       } else {
-        setError('Error al eliminar el auto');
+        alert('Error al eliminar el auto');
       }
     } catch (err) {
-      setError('Error de conexión');
+      alert('Error de conexión');
     }
   };
 
@@ -152,7 +181,7 @@ export default function AdminAutos() {
               <p className="text-gray-600">Administra todos los vehículos de la flota</p>
             </div>
 
-            {loading && (
+            {isInitialLoading && (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="relative">
                   <div className="w-16 h-16 border-4 border-red-200 rounded-full animate-spin"></div>
@@ -162,16 +191,16 @@ export default function AdminAutos() {
               </div>
             )}
 
-            {error && (
+            {errorMessage && (
               <div className="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6 mb-8">
                 <div className="flex items-center">
                   <svg className="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
-                  <p className="text-red-800 font-medium">{error}</p>
+                  <p className="text-red-800 font-medium">{errorMessage}</p>
                 </div>
                 <button
-                  onClick={loadAutos}
+                  onClick={() => mutate()}
                   className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
                 >
                   Reintentar
@@ -179,7 +208,13 @@ export default function AdminAutos() {
               </div>
             )}
 
-            {!loading && !error && autos.length === 0 && (
+            {isValidating && autosData.length > 0 && (
+              <div className="mb-6 text-sm text-gray-500">
+                Actualizando lista...
+              </div>
+            )}
+
+            {!isInitialLoading && !errorMessage && autosData.length === 0 && (
               <div className="text-center py-16 bg-gray-50 rounded-2xl">
                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -189,9 +224,9 @@ export default function AdminAutos() {
               </div>
             )}
 
-            {!loading && !error && autos.length > 0 && (
+            {!isInitialLoading && !errorMessage && autosData.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {autos.map((auto) => (
+                {autosData.map((auto) => (
                   <CarCard
                     key={auto.id}
                     auto={auto}
@@ -200,6 +235,28 @@ export default function AdminAutos() {
                     onDelete={handleDelete}
                   />
                 ))}
+              </div>
+            )}
+
+            {!isInitialLoading && !errorMessage && totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-10">
+                <button
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <span className="text-sm text-gray-600">
+                  Página {page} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
               </div>
             )}
           </div>
@@ -220,7 +277,7 @@ export default function AdminAutos() {
         isOpen={isEditOpen}
         onClose={closeEditModal}
         onSaved={() => {
-          loadAutos();
+          mutate();
           closeEditModal();
         }}
       />

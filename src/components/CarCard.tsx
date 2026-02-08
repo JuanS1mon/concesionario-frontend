@@ -2,7 +2,7 @@
 
 import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
-import { Auto, Estado } from '@/types';
+import { Auto } from '@/types';
 
 interface CarCardProps {
   auto: Auto;
@@ -13,19 +13,22 @@ interface CarCardProps {
 
 const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Carousel automático cada 10 segundos
+  // Carousel automático solo cuando hay hover
   useEffect(() => {
-    if (auto.imagenes && auto.imagenes.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) =>
-          prevIndex === auto.imagenes.length - 1 ? 0 : prevIndex + 1
-        );
-      }, 10000);
-
-      return () => clearInterval(interval);
+    if (!isHovered || !auto.imagenes || auto.imagenes.length <= 1) {
+      return;
     }
-  }, [auto.imagenes]);
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === auto.imagenes.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [auto.imagenes, isHovered]);
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) =>
@@ -43,22 +46,33 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
     setCurrentImageIndex(index);
   };
 
-  const getLowQualityImageUrl = (url: string) => {
-    // Asumiendo URLs de Cloudinary, agregar parámetro de baja calidad
-    if (url.includes('cloudinary.com')) {
-      return url.replace('/upload/', '/upload/q_50/');
+  const buildCloudinaryUrl = (url: string, options: { width?: number; quality?: number }) => {
+    if (!url.includes('cloudinary.com') || !url.includes('/upload/')) {
+      return url;
     }
-    return url;
+
+    const transforms: string[] = [];
+    if (options.width) {
+      transforms.push(`w_${options.width}`);
+    }
+    if (options.quality) {
+      transforms.push(`q_${options.quality}`);
+    }
+    transforms.push('f_auto');
+
+    return url.replace('/upload/', `/upload/${transforms.join(',')}/`);
   };
 
   const imagenActual = auto.imagenes?.[currentImageIndex] || auto.imagenes?.[0];
   const imagenPrincipal = imagenActual 
-    ? getLowQualityImageUrl(imagenActual.url) 
+    ? buildCloudinaryUrl(imagenActual.url, { width: 600, quality: 60 }) 
     : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%239ca3af"%3ESin Imagen%3C/text%3E%3C/svg%3E';
 
   return (
     <div
       className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative h-56 overflow-hidden">
         <Image

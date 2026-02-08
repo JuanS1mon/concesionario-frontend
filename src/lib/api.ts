@@ -21,6 +21,7 @@ api.interceptors.request.use((config) => {
 // Funciones de API para autos
 export const autosAPI = {
   getAll: (filtros?: FiltrosAutos) => api.get('/autos/', { params: filtros }),
+  getPaginated: (params?: FiltrosAutos & { skip?: number; limit?: number }) => api.get('/autos/paginated/', { params }),
   getById: (id: number) => api.get(`/autos/${id}/`),
   create: (data: Partial<Auto>) => api.post('/autos/', data),
   update: (id: number, data: Partial<Auto>) => api.put(`/autos/${id}/`, data),
@@ -39,6 +40,7 @@ export const marcasAPI = {
 // Funciones de API para modelos
 export const modelosAPI = {
   getAll: () => api.get('/modelos/'),
+  getByMarca: (marcaId: number) => api.get(`/modelos/marca/${marcaId}/`),
   getById: (id: number) => api.get(`/modelos/${id}/`),
   create: (data: Partial<Modelo>) => api.post('/modelos/', data),
   update: (id: number, data: Partial<Modelo>) => api.put(`/modelos/${id}/`, data),

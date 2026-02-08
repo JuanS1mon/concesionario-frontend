@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { memo } from 'react';
+import useSWR from 'swr';
 import { FiltrosAutos, Marca, Modelo } from '@/types';
 import { marcasAPI, modelosAPI } from '@/lib/api';
 
@@ -11,42 +12,26 @@ interface FilterSidebarProps {
 }
 
 const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, onToggle }: FilterSidebarProps) {
-  const [marcas, setMarcas] = useState<Marca[]>([]);
-  const [modelos, setModelos] = useState<Modelo[]>([]);
+  const { data: marcas = [] } = useSWR<Marca[]>(
+    'marcas',
+    () => marcasAPI.getAll().then((response) => response.data),
+    { revalidateOnFocus: false }
+  );
 
-  useEffect(() => {
-    // Cargar datos iniciales
-    const loadData = async () => {
-      try {
-        const marcasRes = await marcasAPI.getAll();
-        setMarcas(marcasRes.data);
-      } catch (error) {
-        console.error('Error loading filter data:', error);
-      }
-    };
-    loadData();
-  }, []);
+  const { data: modelos = [] } = useSWR<Modelo[]>(
+    filtros.marca_id ? ['modelos', filtros.marca_id] : null,
+    () => modelosAPI.getByMarca(filtros.marca_id as number).then((response) => response.data),
+    { revalidateOnFocus: false }
+  );
 
-  const handleMarcaChange = async (marcaId: string) => {
+  const handleMarcaChange = (marcaId: string) => {
     const newFiltros = { ...filtros, marca_id: marcaId ? parseInt(marcaId) : undefined, modelo_id: undefined };
     onFiltrosChange(newFiltros);
 
-    if (marcaId) {
-      try {
-        const modelosRes = await modelosAPI.getAll();
-        const modelosFiltrados = modelosRes.data.filter((modelo: Modelo) => modelo.marca_id === parseInt(marcaId));
-        setModelos(modelosFiltrados);
-      } catch (error) {
-        console.error('Error loading modelos:', error);
-      }
-    } else {
-      setModelos([]);
-    }
   };
 
   const updateFiltro = (key: keyof FiltrosAutos, value: string | number | boolean | undefined) => {
     const newFiltros = { ...filtros, [key]: value };
-    console.log(`[FilterSidebar] Actualizando ${key}:`, value, 'Nuevos filtros:', newFiltros);
     onFiltrosChange(newFiltros);
   };
 
