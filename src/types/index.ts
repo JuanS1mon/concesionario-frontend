@@ -277,3 +277,74 @@ export interface EstadisticasVentas {
   ventas_con_toma: number;
   ganancia_estimada_total: number;
 }
+
+// Pricing Inteligente
+export type CompetitividadTag = 'muy_competitivo' | 'competitivo' | 'caro' | 'sin_datos';
+
+export interface MarketListing {
+  id: number;
+  fuente: string;
+  marca_id: number;
+  modelo_id: number;
+  anio: number;
+  km?: number;
+  precio: number;
+  moneda: string;
+  ubicacion?: string;
+  url?: string;
+  activo: boolean;
+  fecha_scraping?: string;
+}
+
+export interface PrecioSugerido {
+  auto_id: number;
+  marca?: string;
+  modelo?: string;
+  anio?: number;
+  precio_actual: number;
+  precio_mercado_promedio?: number;
+  precio_mercado_mediana?: number;
+  precio_sugerido?: number;
+  comparables_count?: number;
+  competitividad?: CompetitividadTag;
+  margen_actual?: number;
+  margen_sugerido?: number;
+  ajuste_km?: number;
+  comparables?: MarketListing[];
+}
+
+export interface SimulacionPrecio {
+  precio_propuesto: number;
+  dias_estimados: number;
+  probabilidad_venta_30dias: number;
+  margen_estimado: number;
+  competitividad: CompetitividadTag;
+}
+
+export interface EstadisticasPricing {
+  total_analizados: number;
+  con_datos_mercado: number;
+  sin_datos_mercado: number;
+  muy_competitivos: number;
+  competitivos: number;
+  caros: number;
+  margen_promedio?: number;
+  precio_mercado_promedio_global?: number;
+  total_listings_mercado: number;
+  total_raw_listings: number;
+  fuentes_activas: string[];
+}
+
+export interface ScrapingResult {
+  fuente: string;
+  nuevos: number;
+  duplicados: number;
+  errores: number;
+}
+
+export interface NormalizacionResult {
+  procesados: number;
+  normalizados: number;
+  sin_match: number;
+  outliers_filtrados: number;
+}

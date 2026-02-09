@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate } from '@/types';
+import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate, PrecioSugerido, SimulacionPrecio, EstadisticasPricing, MarketListing, ScrapingResult, NormalizacionResult } from '@/types';
 import { API_BASE_URL } from './constants';
 
 export const api = axios.create({
@@ -114,4 +114,26 @@ export const ventasAPI = {
   update: (id: number, data: Partial<Venta>) => api.put(`/ventas/${id}/`, data),
   delete: (id: number) => api.delete(`/ventas/${id}/`),
   getEstadisticas: () => api.get('/ventas/estadisticas'),
+};
+
+// Funciones de API para Pricing Inteligente
+export const pricingAPI = {
+  getAnalisis: () => api.get<PrecioSugerido[]>('/pricing/analisis'),
+  getAnalisisAuto: (autoId: number) => api.get<PrecioSugerido>(`/pricing/analisis/${autoId}`),
+  getComparables: (autoId: number, rangoAnio?: number) =>
+    api.get<MarketListing[]>(`/pricing/comparables/${autoId}`, { params: { rango_anio: rangoAnio } }),
+  simular: (autoId: number, precioPropuesto: number) =>
+    api.post<SimulacionPrecio>(`/pricing/simular/${autoId}`, { precio_propuesto: precioPropuesto }),
+  simularRango: (autoId: number, precioMin: number, precioMax: number, steps?: number) =>
+    api.post<SimulacionPrecio[]>(`/pricing/simular-rango/${autoId}`, {
+      precio_min: precioMin,
+      precio_max: precioMax,
+      steps: steps || 10,
+    }),
+  getEstadisticas: () => api.get<EstadisticasPricing>('/pricing/estadisticas'),
+  getMercado: (params?: { marca_id?: number; modelo_id?: number; anio?: number; fuente?: string }) =>
+    api.get<MarketListing[]>('/pricing/mercado', { params }),
+  ejecutarScraping: (fuente?: string) =>
+    api.post<ScrapingResult>('/pricing/scrape', null, { params: { fuente: fuente || 'all' } }),
+  ejecutarNormalizacion: () => api.post<NormalizacionResult>('/pricing/normalizar'),
 };

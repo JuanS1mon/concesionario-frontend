@@ -22,6 +22,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   BanknotesIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 
 interface SubItem {
@@ -79,6 +80,17 @@ const navItems: NavItem[] = [
     description: 'Registro de ventas, tomas y márgenes',
     action: 'Ver ventas',
     icon: BanknotesIcon
+  },
+  {
+    href: '/admin/pricing',
+    title: 'Pricing',
+    description: 'Análisis de precios y simulador',
+    action: 'Ver pricing',
+    icon: CurrencyDollarIcon,
+    children: [
+      { href: '/admin/pricing', title: 'Dashboard', icon: ChartBarSquareIcon },
+      { href: '/admin/pricing/simulador', title: 'Simulador', icon: CurrencyDollarIcon },
+    ]
   },
   {
     href: '/admin/configuracion-cloudinary',
