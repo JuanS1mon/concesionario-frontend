@@ -35,6 +35,8 @@ export default function EditarAuto() {
     anio: '',
     tipo: '',
     precio: '',
+    precio_compra: '',
+    es_trade_in: false,
     descripcion: '',
     estado_id: '',
     en_stock: true,
@@ -145,6 +147,8 @@ export default function EditarAuto() {
           anio: auto.anio?.toString() || '',
           tipo: auto.tipo || '',
           precio: auto.precio?.toString() || '',
+          precio_compra: auto.precio_compra?.toString() || '',
+          es_trade_in: auto.es_trade_in ?? false,
           descripcion: auto.descripcion || '',
           estado_id: auto.estado_id?.toString() || '',
           en_stock: auto.en_stock ?? true,
@@ -319,6 +323,8 @@ export default function EditarAuto() {
         estado_id: parseInt(formData.estado_id),
         anio: parseInt(formData.anio),
         precio: parseFloat(formData.precio),
+        precio_compra: formData.precio_compra ? parseFloat(formData.precio_compra) : null,
+        es_trade_in: formData.es_trade_in,
         tipo: formData.tipo,
         descripcion: formData.descripcion,
         en_stock: formData.en_stock,
@@ -492,6 +498,32 @@ export default function EditarAuto() {
                   step="0.01"
                   placeholder="0.00"
                 />
+
+                <FormField
+                  label="Precio de Compra"
+                  name="precio_compra"
+                  type="number"
+                  value={formData.precio_compra}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+                <p className="text-sm text-gray-500 mt-1">Precio al que se adquirió el auto (opcional)</p>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="es_trade_in"
+                    name="es_trade_in"
+                    checked={formData.es_trade_in}
+                    onChange={(e) => setFormData(prev => ({ ...prev, es_trade_in: e.target.checked }))}
+                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="es_trade_in" className="ml-2 block text-sm text-gray-900">
+                    ¿Fue trade-in?
+                  </label>
+                </div>
 
                 <FormField
                   label="Estado"

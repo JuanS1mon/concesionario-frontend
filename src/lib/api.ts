@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate, PrecioSugerido, SimulacionPrecio, EstadisticasPricing, MarketListing, ScrapingResult, NormalizacionResult } from '@/types';
+import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate, PrecioSugerido, SimulacionPrecio, EstadisticasPricing, MarketListing, ScrapingResult, NormalizacionResult, ActualizarPrecioResponse } from '@/types';
 import { API_BASE_URL } from './constants';
 
 export const api = axios.create({
@@ -17,6 +17,21 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Interceptor para manejar errores de respuesta
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido - limpiar y redirigir al login
+      localStorage.removeItem('token');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/admin';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Funciones de API para autos
 export const autosAPI = {
@@ -136,4 +151,6 @@ export const pricingAPI = {
   ejecutarScraping: (fuente?: string) =>
     api.post<ScrapingResult>('/pricing/scrape', null, { params: { fuente: fuente || 'all' } }),
   ejecutarNormalizacion: () => api.post<NormalizacionResult>('/pricing/normalizar'),
+  actualizarPrecio: (autoId: number, precio: number) =>
+    api.patch<ActualizarPrecioResponse>(`/pricing/actualizar-precio/${autoId}`, { precio }),
 };

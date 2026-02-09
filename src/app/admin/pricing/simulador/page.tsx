@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Auto, Marca, Modelo, SimulacionPrecio, PrecioSugerido } from '@/types';
 import { pricingAPI, autosAPI, marcasAPI, modelosAPI } from '@/lib/api';
@@ -26,7 +26,7 @@ const compLabels: Record<string, string> = {
   sin_datos: 'Sin datos',
 };
 
-export default function PricingSimulador() {
+function PricingSimuladorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const autoIdParam = searchParams.get('auto_id');
@@ -151,6 +151,32 @@ export default function PricingSimulador() {
         />
       )}
 
+      {/* Help Section */}
+      <div className="px-2 md:px-6 mb-4">
+        <details className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <summary className="cursor-pointer font-medium text-blue-900 hover:text-blue-700">
+            💡 ¿Cómo funciona el Simulador?
+          </summary>
+          <div className="mt-3 text-sm text-blue-800 space-y-2">
+            <p><strong>Flujo del simulador:</strong></p>
+            <ol className="list-decimal list-inside space-y-1 ml-4">
+              <li>Seleccionás un auto del inventario</li>
+              <li>El sistema carga datos de mercado (mediana, comparables)</li>
+              <li>Calcula un rango de precios (70%-130% de la mediana)</li>
+              <li>Simula 15 precios diferentes para crear la curva precio vs tiempo</li>
+              <li>Movés el slider para ver en tiempo real cómo cambia el tiempo de venta</li>
+            </ol>
+            <p className="mt-2"><strong>Métricas calculadas:</strong></p>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li><strong>Días estimados:</strong> Tiempo promedio de venta basado en datos históricos</li>
+              <li><strong>Probabilidad 30 días:</strong> % de chance de vender en menos de 30 días</li>
+              <li><strong>Margen estimado:</strong> Ganancia aproximada (precio - costo estimado)</li>
+              <li><strong>Competitividad:</strong> Cómo se compara tu precio con el mercado</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
       <div className="p-2 md:p-6">
         {/* Back + Auto Selector */}
         <div className="flex flex-wrap gap-3 mb-6 items-center">
@@ -195,12 +221,17 @@ export default function PricingSimulador() {
               <div className="bg-white rounded-xl shadow p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Información del Auto</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-gray-500">Marca:</span> <span className="font-medium text-gray-900">{analisis.marca}</span></div>
-                  <div><span className="text-gray-500">Modelo:</span> <span className="font-medium text-gray-900">{analisis.modelo}</span></div>
-                  <div><span className="text-gray-500">Año:</span> <span className="font-medium text-gray-900">{analisis.anio}</span></div>
-                  <div><span className="text-gray-500">Precio actual:</span> <span className="font-bold text-gray-900">{fmt(analisis.precio_actual)}</span></div>
-                  <div><span className="text-gray-500">Comparables:</span> <span className="font-medium text-gray-900">{analisis.comparables_count || 0}</span></div>
-                  <div>
+                  <div title="Marca del vehículo"><span className="text-gray-500">Marca:</span> <span className="font-medium text-gray-900">{analisis.marca}</span></div>
+                  <div title="Modelo del vehículo"><span className="text-gray-500">Modelo:</span> <span className="font-medium text-gray-900">{analisis.modelo}</span></div>
+                  <div title="Año de fabricación"><span className="text-gray-500">Año:</span> <span className="font-medium text-gray-900">{analisis.anio}</span></div>
+                  <div title="Precio actual en el inventario"><span className="text-gray-500">Precio actual:</span> <span className="font-bold text-gray-900">{fmt(analisis.precio_actual)}</span></div>
+                  <div title="Cantidad de autos similares encontrados en el mercado"><span className="text-gray-500">Comparables:</span> <span className="font-medium text-gray-900">{analisis.comparables_count || 0}</span></div>
+                  <div title={
+                    analisis.competitividad === 'muy_competitivo' ? 'Precio < 95% de la mediana del mercado. Vende rápido pero con menor margen.' :
+                    analisis.competitividad === 'competitivo' ? 'Precio entre 95%-105% de la mediana del mercado. Balance óptimo.' :
+                    analisis.competitividad === 'caro' ? 'Precio > 105% de la mediana del mercado. Mayor margen pero vende más lento.' :
+                    'No hay suficientes datos de mercado para calcular competitividad.'
+                  }>
                     <span className="text-gray-500">Competitividad:</span>{' '}
                     <span className={`font-medium ${compColors[analisis.competitividad || 'sin_datos']}`}>
                       {compLabels[analisis.competitividad || 'sin_datos']}
@@ -213,12 +244,12 @@ export default function PricingSimulador() {
               <div className="bg-white rounded-xl shadow p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Datos del Mercado</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-gray-500">Promedio:</span> <span className="font-medium text-gray-900">{fmt(analisis.precio_mercado_promedio)}</span></div>
-                  <div><span className="text-gray-500">Mediana:</span> <span className="font-bold text-blue-700">{fmt(analisis.precio_mercado_mediana)}</span></div>
-                  <div><span className="text-gray-500">Precio sugerido:</span> <span className="font-bold text-green-700">{fmt(analisis.precio_sugerido)}</span></div>
-                  <div><span className="text-gray-500">Margen actual:</span> <span className="font-medium text-gray-900">{fmt(analisis.margen_actual)}</span></div>
-                  <div><span className="text-gray-500">Margen sugerido:</span> <span className="font-medium text-emerald-700">{fmt(analisis.margen_sugerido)}</span></div>
-                  <div><span className="text-gray-500">Ajuste km:</span> <span className="font-medium text-gray-900">{fmt(analisis.ajuste_km)}</span></div>
+                  <div title="Precio promedio de todos los autos comparables"><span className="text-gray-500">Promedio:</span> <span className="font-medium text-gray-900">{fmt(analisis.precio_mercado_promedio)}</span></div>
+                  <div title="Precio mediano (50%) de todos los autos comparables - usado para calcular competitividad"><span className="text-gray-500">Mediana:</span> <span className="font-bold text-blue-700">{fmt(analisis.precio_mercado_mediana)}</span></div>
+                  <div title="Precio sugerido basado en la mediana del mercado"><span className="text-gray-500">Precio sugerido:</span> <span className="font-bold text-green-700">{fmt(analisis.precio_sugerido)}</span></div>
+                  <div title="Margen actual = precio actual - costo estimado (85% del precio actual)"><span className="text-gray-500">Margen actual:</span> <span className="font-medium text-gray-900">{fmt(analisis.margen_actual)}</span></div>
+                  <div title="Margen sugerido = precio sugerido - costo estimado"><span className="text-gray-500">Margen sugerido:</span> <span className="font-medium text-emerald-700">{fmt(analisis.margen_sugerido)}</span></div>
+                  <div title="Ajuste por kilometraje (si el auto tiene más km que el promedio del mercado, se descuenta)"><span className="text-gray-500">Ajuste km:</span> <span className="font-medium text-gray-900">{fmt(analisis.ajuste_km)}</span></div>
                 </div>
               </div>
             </div>
@@ -253,19 +284,24 @@ export default function PricingSimulador() {
               {/* Resultado de simulación */}
               {simulacionActual && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-black p-4 rounded-xl text-center text-white shadow">
+                  <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-black p-4 rounded-xl text-center text-white shadow" title="Días estimados para vender el auto a este precio (basado en datos históricos)">
                     <div className="text-2xl font-bold">{simulacionActual.dias_estimados.toFixed(0)}</div>
                     <div className="text-xs text-white/80 mt-1">Días Estimados</div>
                   </div>
-                  <div className="bg-gradient-to-br from-green-500 via-green-600 to-black p-4 rounded-xl text-center text-white shadow">
+                  <div className="bg-gradient-to-br from-green-500 via-green-600 to-black p-4 rounded-xl text-center text-white shadow" title="Probabilidad de vender en menos de 30 días a este precio">
                     <div className="text-2xl font-bold">{simulacionActual.probabilidad_venta_30dias}%</div>
                     <div className="text-xs text-white/80 mt-1">Prob. Venta 30 días</div>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-black p-4 rounded-xl text-center text-white shadow">
+                  <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-black p-4 rounded-xl text-center text-white shadow" title={`Margen estimado: ${fmt(simulacionActual.margen_estimado)} (precio - costo estimado de compra)`}>
                     <div className="text-lg font-bold">{fmt(simulacionActual.margen_estimado)}</div>
                     <div className="text-xs text-white/80 mt-1">Margen Estimado</div>
                   </div>
-                  <div className="bg-gradient-to-br from-cyan-500 via-cyan-600 to-black p-4 rounded-xl text-center text-white shadow">
+                  <div className="bg-gradient-to-br from-cyan-500 via-cyan-600 to-black p-4 rounded-xl text-center text-white shadow" title={
+                    simulacionActual.competitividad === 'muy_competitivo' ? 'Precio < 95% de la mediana del mercado. Vende rápido pero con menor margen.' :
+                    simulacionActual.competitividad === 'competitivo' ? 'Precio entre 95%-105% de la mediana del mercado. Balance óptimo.' :
+                    simulacionActual.competitividad === 'caro' ? 'Precio > 105% de la mediana del mercado. Mayor margen pero vende más lento.' :
+                    'Sin datos suficientes para calcular competitividad.'
+                  }>
                     <div className={`text-lg font-bold`}>
                       {compLabels[simulacionActual.competitividad] || simulacionActual.competitividad}
                     </div>
@@ -279,18 +315,19 @@ export default function PricingSimulador() {
             {simulaciones.length > 0 && (
               <div className="bg-white rounded-xl shadow p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Curva Precio vs Tiempo de Venta</h3>
+                <p className="text-sm text-gray-600 mb-4">Cada barra representa un precio simulado. Altura = días estimados de venta. Colores indican competitividad.</p>
                 <div className="flex items-end gap-1 h-48">
                   {simulaciones.map((sim, idx) => {
                     const barHeight = maxDias > 0 ? (sim.dias_estimados / maxDias) * 100 : 10;
                     const isActive = Math.abs(sim.precio_propuesto - precioSlider) < (sliderMax - sliderMin) / 15;
                     return (
-                      <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
+                      <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full" style={{ '--bar-height': `${Math.max(barHeight, 4)}%` } as React.CSSProperties}>
                         <div className="text-[10px] text-gray-500 mb-1">{sim.dias_estimados.toFixed(0)}d</div>
                         <div
                           className={`w-full rounded-t transition-all duration-200 ${
                             isActive ? 'bg-blue-600' : sim.competitividad === 'caro' ? 'bg-red-400' : sim.competitividad === 'muy_competitivo' ? 'bg-green-400' : 'bg-blue-400'
                           }`}
-                          style={{ height: `${Math.max(barHeight, 4)}%` }}
+                          style={{ height: 'var(--bar-height)' }}
                           title={`${fmt(sim.precio_propuesto)} → ${sim.dias_estimados.toFixed(0)} días (${sim.probabilidad_venta_30dias}%)`}
                         />
                         <div className="text-[8px] text-gray-400 mt-1 rotate-[-45deg] origin-left whitespace-nowrap">
@@ -330,5 +367,15 @@ export default function PricingSimulador() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PricingSimulador() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-600"></div>
+    </div>}>
+      <PricingSimuladorContent />
+    </Suspense>
   );
 }

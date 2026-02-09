@@ -28,6 +28,8 @@ export interface Auto {
   anio: number;
   tipo: string;
   precio: number;
+  precio_compra?: number;
+  es_trade_in?: boolean;
   descripcion?: string;
   en_stock: boolean;
   estado_id: number;
@@ -347,4 +349,11 @@ export interface NormalizacionResult {
   normalizados: number;
   sin_match: number;
   outliers_filtrados: number;
+}
+
+export interface ActualizarPrecioResponse {
+  auto_id: number;
+  precio_anterior: number;
+  precio_nuevo: number;
+  mensaje: string;
 }
