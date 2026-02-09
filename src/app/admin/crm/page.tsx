@@ -18,6 +18,8 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
   RocketLaunchIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from '@heroicons/react/24/solid';
 
 export default function DashboardCRM() {
@@ -27,6 +29,7 @@ export default function DashboardCRM() {
   const [oportunidades, setOportunidades] = useState<Oportunidad[]>([]);
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [heroVisible, setHeroVisible] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -97,18 +100,34 @@ export default function DashboardCRM() {
   }
 
   return (
-    <div className="p-2 md:p-6">
-      <AdminHero
-        title="Dashboard CRM"
-        description="Visión general de clientes, oportunidades y rendimiento de ventas"
-      />
+    <div className="min-h-screen bg-gray-50">
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Dashboard CRM"
+          description="Visión general de clientes, oportunidades y rendimiento de ventas"
+        />
+      )}
+
+      <div className="p-2 md:p-6">
 
       {/* Navegación CRM */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Link href="/admin/cotizaciones" className="group block">
           <div className="bg-white rounded-2xl shadow border border-gray-100 p-5 hover:shadow-lg transition-all hover:-translate-y-1">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 via-amber-600 to-black rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <DocumentTextIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -121,7 +140,7 @@ export default function DashboardCRM() {
         <Link href="/admin/clientes" className="group block">
           <div className="bg-white rounded-2xl shadow border border-gray-100 p-5 hover:shadow-lg transition-all hover:-translate-y-1">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-blue-600 to-black rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <UserGroupIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -134,7 +153,7 @@ export default function DashboardCRM() {
         <Link href="/admin/oportunidades" className="group block">
           <div className="bg-white rounded-2xl shadow border border-gray-100 p-5 hover:shadow-lg transition-all hover:-translate-y-1">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 via-emerald-600 to-black rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <RocketLaunchIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -148,7 +167,7 @@ export default function DashboardCRM() {
 
       {/* KPIs principales */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-5 rounded-2xl shadow-lg">
+        <div className="bg-gradient-to-br from-amber-500 via-amber-600 to-black text-white p-5 rounded-2xl shadow-lg">
           <div className="flex justify-between items-start">
             <div>
               <div className="text-sm opacity-90">Cotizaciones</div>
@@ -158,7 +177,7 @@ export default function DashboardCRM() {
           </div>
           <div className="text-xs opacity-75 mt-2">Solicitudes recibidas</div>
         </div>
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-2xl shadow-lg">
+        <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-black text-white p-5 rounded-2xl shadow-lg">
           <div className="flex justify-between items-start">
             <div>
               <div className="text-sm opacity-90">Total Clientes</div>
@@ -169,7 +188,7 @@ export default function DashboardCRM() {
           <div className="text-xs opacity-75 mt-2">Score promedio: {statsClientes?.score_promedio || 0}</div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-5 rounded-2xl shadow-lg">
+        <div className="bg-gradient-to-br from-green-500 via-green-600 to-black text-white p-5 rounded-2xl shadow-lg">
           <div className="flex justify-between items-start">
             <div>
               <div className="text-sm opacity-90">Valor en Proceso</div>
@@ -180,7 +199,7 @@ export default function DashboardCRM() {
           <div className="text-xs opacity-75 mt-2">{statsOportunidades?.total || 0} oportunidades activas</div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-5 rounded-2xl shadow-lg">
+        <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-black text-white p-5 rounded-2xl shadow-lg">
           <div className="flex justify-between items-start">
             <div>
               <div className="text-sm opacity-90">Ventas Ganadas</div>
@@ -191,7 +210,7 @@ export default function DashboardCRM() {
           <div className="text-xs opacity-75 mt-2">{statsOportunidades?.por_etapa.ganada || 0} oportunidades cerradas</div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-5 rounded-2xl shadow-lg">
+        <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-black text-white p-5 rounded-2xl shadow-lg">
           <div className="flex justify-between items-start">
             <div>
               <div className="text-sm opacity-90">Tasa Conversión</div>
@@ -433,6 +452,7 @@ export default function DashboardCRM() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

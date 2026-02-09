@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   ArrowDownTrayIcon,
   EyeIcon,
+  EyeSlashIcon,
 } from '@heroicons/react/24/solid';
 
 const ESTADOS_VENTA = ['pendiente', 'completada', 'cancelada'];
@@ -40,6 +41,7 @@ export default function AdminVentas() {
   const [oportunidades, setOportunidades] = useState<Oportunidad[]>([]);
   const [stats, setStats] = useState<EstadisticasVentas | null>(null);
   const [loading, setLoading] = useState(true);
+  const [heroVisible, setHeroVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -271,42 +273,58 @@ export default function AdminVentas() {
   const fmt = (n?: number | null) => n != null ? '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 0 }) : '—';
 
   return (
-    <div className="p-2 md:p-6">
-      <AdminHero
-        title="Registro de Ventas"
-        description="Gestiona operaciones de venta, tomas de autos y márgenes de ganancia"
-      />
+    <div className="min-h-screen bg-gray-50">
+      {/* Toggle Button for Hero */}
+      <div className="fixed top-20 right-4 z-30">
+        <button
+          onClick={() => setHeroVisible(!heroVisible)}
+          className="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200"
+          title={heroVisible ? 'Ocultar encabezado' : 'Mostrar encabezado'}
+        >
+          {heroVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Hero Section */}
+      {heroVisible && (
+        <AdminHero
+          title="Registro de Ventas"
+          description="Gestiona operaciones de venta, tomas de autos y márgenes de ganancia"
+        />
+      )}
+
+      <div className="p-2 md:p-6">
 
       {/* Estadísticas */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-          <div className="bg-blue-50 p-4 rounded-xl text-center">
-            <div className="text-2xl font-bold text-blue-700">{stats.total}</div>
-            <div className="text-xs text-blue-600 mt-1">Total Ventas</div>
+          <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-xs text-white/80 mt-1">Total Ventas</div>
           </div>
-          <div className="bg-green-50 p-4 rounded-xl text-center">
-            <div className="text-2xl font-bold text-green-700">{stats.por_estado.completada}</div>
-            <div className="text-xs text-green-600 mt-1">Completadas</div>
+          <div className="bg-gradient-to-br from-green-500 via-green-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-2xl font-bold">{stats.por_estado.completada}</div>
+            <div className="text-xs text-white/80 mt-1">Completadas</div>
           </div>
-          <div className="bg-yellow-50 p-4 rounded-xl text-center">
-            <div className="text-2xl font-bold text-yellow-700">{stats.por_estado.pendiente}</div>
-            <div className="text-xs text-yellow-600 mt-1">Pendientes</div>
+          <div className="bg-gradient-to-br from-yellow-500 via-yellow-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-2xl font-bold">{stats.por_estado.pendiente}</div>
+            <div className="text-xs text-white/80 mt-1">Pendientes</div>
           </div>
-          <div className="bg-emerald-50 p-4 rounded-xl text-center">
-            <div className="text-lg font-bold text-emerald-700">{fmt(stats.total_vendido)}</div>
-            <div className="text-xs text-emerald-600 mt-1">Total Vendido</div>
+          <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-lg font-bold">{fmt(stats.total_vendido)}</div>
+            <div className="text-xs text-white/80 mt-1">Total Vendido</div>
           </div>
-          <div className="bg-orange-50 p-4 rounded-xl text-center">
-            <div className="text-lg font-bold text-orange-700">{fmt(stats.total_tomado)}</div>
-            <div className="text-xs text-orange-600 mt-1">Total Tomas</div>
+          <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-lg font-bold">{fmt(stats.total_tomado)}</div>
+            <div className="text-xs text-white/80 mt-1">Total Tomas</div>
           </div>
-          <div className="bg-purple-50 p-4 rounded-xl text-center">
-            <div className="text-lg font-bold text-purple-700">{fmt(stats.total_diferencia)}</div>
-            <div className="text-xs text-purple-600 mt-1">Diferencia Total</div>
+          <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-lg font-bold">{fmt(stats.total_diferencia)}</div>
+            <div className="text-xs text-white/80 mt-1">Diferencia Total</div>
           </div>
-          <div className="bg-indigo-50 p-4 rounded-xl text-center">
-            <div className="text-2xl font-bold text-indigo-700">{stats.ventas_con_toma}</div>
-            <div className="text-xs text-indigo-600 mt-1">Con Toma</div>
+          <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-black p-4 rounded-xl text-center text-white shadow">
+            <div className="text-2xl font-bold">{stats.ventas_con_toma}</div>
+            <div className="text-xs text-white/80 mt-1">Con Toma</div>
           </div>
         </div>
       )}
@@ -704,6 +722,7 @@ export default function AdminVentas() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
