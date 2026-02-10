@@ -14,6 +14,8 @@ export default function Home() {
   const [debouncedFiltros, setDebouncedFiltros] = useState<FiltrosAutos>({});
   const [selectedAuto, setSelectedAuto] = useState<Auto | null>(null);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<'precio' | 'anio'>('precio');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const pageSize = 12;
 
   useEffect(() => {
@@ -28,27 +30,59 @@ export default function Home() {
     setPage(1);
   }, [debouncedFiltros]);
 
-  const autosKey = useMemo(() => (
-    ['autos-paginated', debouncedFiltros, page, pageSize]
-  ), [debouncedFiltros, page, pageSize]);
+  const autosKey = useMemo(() => ['autos-all'], []);
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<PaginatedAutos>(
+  const { data: allAutos, error, isLoading, isValidating, mutate } = useSWR<Auto[]>(
     autosKey,
-    () => autosAPI.getPaginated({
-      ...debouncedFiltros,
-      skip: (page - 1) * pageSize,
-      limit: pageSize,
-    }).then((response) => response.data),
+    () => autosAPI.getAll({}).then((response) => response.data),
     {
       revalidateOnFocus: false,
       keepPreviousData: true,
     }
   );
 
-  const autosData = data?.items ?? [];
-  const totalAutos = data?.total ?? 0;
+  const filteredAndSortedAutos = useMemo(() => {
+    if (!allAutos) return [];
+
+    let filtered = allAutos.filter((auto) => {
+      if (debouncedFiltros.marca_id && auto.marca_id !== debouncedFiltros.marca_id) return false;
+      if (debouncedFiltros.modelo_id && auto.modelo_id !== debouncedFiltros.modelo_id) return false;
+      if (debouncedFiltros.anio_min && auto.anio < debouncedFiltros.anio_min) return false;
+      if (debouncedFiltros.anio_max && auto.anio > debouncedFiltros.anio_max) return false;
+      if (debouncedFiltros.tipo && auto.tipo !== debouncedFiltros.tipo) return false;
+      if (debouncedFiltros.precio_min && auto.precio < debouncedFiltros.precio_min) return false;
+      if (debouncedFiltros.precio_max && auto.precio > debouncedFiltros.precio_max) return false;
+      if (debouncedFiltros.en_stock !== undefined && auto.en_stock !== debouncedFiltros.en_stock) return false;
+      return true;
+    });
+
+    // Ordenar
+    filtered.sort((a, b) => {
+      let aVal, bVal;
+      if (sortBy === 'precio') {
+        aVal = a.precio;
+        bVal = b.precio;
+      } else {
+        aVal = a.anio;
+        bVal = b.anio;
+      }
+      if (sortOrder === 'asc') {
+        return aVal - bVal;
+      } else {
+        return bVal - aVal;
+      }
+    });
+
+    return filtered;
+  }, [allAutos, debouncedFiltros, sortBy, sortOrder]);
+
+  const totalAutos = filteredAndSortedAutos.length;
   const totalPages = Math.max(1, Math.ceil(totalAutos / pageSize));
-  const isInitialLoading = !data && isLoading;
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const autosData = filteredAndSortedAutos.slice(startIndex, endIndex);
+
+  const isInitialLoading = !allAutos && isLoading;
   const errorMessage = error ? 'Error al cargar los autos' : null;
 
   const handleAutoClick = (auto: Auto) => {
@@ -75,7 +109,10 @@ export default function Home() {
               Descubre la excelencia automotriz. Autos premium con garantía y el mejor servicio.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button 
+                onClick={() => document.getElementById('nuestra-flota')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
                 Explorar Catálogo
               </button>
               <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300">
@@ -106,9 +143,30 @@ export default function Home() {
 
           {/* Lista de autos */}
           <div className="lg:col-span-3">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Nuestra Flota</h2>
-              <p className="text-gray-600">Descubre autos excepcionales con las mejores condiciones</p>
+            <div id="nuestra-flota" className="mb-8 flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Nuestra Flota</h2>
+                <p className="text-gray-600">Descubre autos excepcionales con las mejores condiciones</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">Ordenar por:</span>
+                <select
+                  value={`${sortBy}_${sortOrder}`}
+                  onChange={(e) => {
+                    const [by, order] = e.target.value.split('_');
+                    setSortBy(by as 'precio' | 'anio');
+                    setSortOrder(order as 'asc' | 'desc');
+                    setPage(1);
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  aria-label="Ordenar autos"
+                >
+                  <option value="precio_asc">Precio: Menor a Mayor</option>
+                  <option value="precio_desc">Precio: Mayor a Menor</option>
+                  <option value="anio_asc">Año: Menor a Mayor</option>
+                  <option value="anio_desc">Año: Mayor a Menor</option>
+                </select>
+              </div>
             </div>
 
             {isInitialLoading && (
@@ -138,9 +196,9 @@ export default function Home() {
               </div>
             )}
 
-            {isValidating && autosData.length > 0 && (
+            {isValidating && !allAutos && autosData.length > 0 && (
               <div className="mb-6 text-sm text-gray-500">
-                Actualizando lista...
+                Cargando lista...
               </div>
             )}
 

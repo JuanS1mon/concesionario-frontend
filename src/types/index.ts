@@ -103,6 +103,8 @@ export interface FiltrosAutos {
   precio_min?: number;
   precio_max?: number;
   en_stock?: boolean;
+  sort_by?: 'precio' | 'anio';
+  sort_order?: 'asc' | 'desc';
 }
 
 // CRM - Clientes
