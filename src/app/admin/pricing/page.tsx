@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { PrecioSugerido, EstadisticasPricing, Marca, Modelo, ExcelImportResult } from '@/types';
-import { pricingAPI, marcasAPI, modelosAPI } from '@/lib/api';
+import { PrecioSugerido, EstadisticasPricing, Marca, Modelo, ExcelImportResult, Auto } from '@/types';
+import { pricingAPI, marcasAPI, modelosAPI, autosAPI } from '@/lib/api';
 import AdminHero from '@/components/AdminHero';
+import AutoDetalle from '@/components/AutoDetalle';
 import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
@@ -56,6 +57,9 @@ export default function PricingDashboard() {
   const [excelResult, setExcelResult] = useState<ExcelImportResult | null>(null);
   const [excelError, setExcelError] = useState('');
   const [showExcelPanel, setShowExcelPanel] = useState(false);
+  const [selectedAuto, setSelectedAuto] = useState<Auto | null>(null);
+  const [autoDetalleLoading, setAutoDetalleLoading] = useState(false);
+  const [autoDetalleError, setAutoDetalleError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -236,6 +240,20 @@ export default function PricingDashboard() {
     } catch (error: any) {
       console.error('Error al descargar plantilla:', error);
       setExcelError('Error al descargar la plantilla');
+    }
+  };
+
+  const openAutoDetalle = async (autoId: number) => {
+    setAutoDetalleError('');
+    setAutoDetalleLoading(true);
+    try {
+      const response = await autosAPI.getById(autoId);
+      setSelectedAuto(response.data);
+    } catch (error) {
+      console.error('Error al cargar auto:', error);
+      setAutoDetalleError('No se pudo cargar el detalle del auto');
+    } finally {
+      setAutoDetalleLoading(false);
     }
   };
 
@@ -631,6 +649,18 @@ export default function PricingDashboard() {
           </div>
         )}
 
+        {autoDetalleLoading && (
+          <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
+            Cargando detalle del auto...
+          </div>
+        )}
+
+        {autoDetalleError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {autoDetalleError}
+          </div>
+        )}
+
         {/* Table */}
         <div className="bg-white rounded-xl shadow overflow-hidden">
           <div className="overflow-x-auto">
@@ -685,7 +715,14 @@ export default function PricingDashboard() {
                     return (
                       <tr key={item.auto_id} className={`hover:bg-gray-50 transition ${isEditing ? 'bg-blue-50/50' : ''}`}>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900 text-sm">{item.marca} {item.modelo}</div>
+                          <button
+                            type="button"
+                            onClick={() => openAutoDetalle(item.auto_id)}
+                            className="font-medium text-gray-900 text-sm text-left hover:underline"
+                            title="Ver detalle del auto"
+                          >
+                            {item.marca} {item.modelo}
+                          </button>
                           <div className="text-xs text-gray-500">{item.anio} · ID #{item.auto_id}</div>
                         </td>
                         <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">{fmt(item.precio_actual)}</td>
@@ -820,6 +857,13 @@ export default function PricingDashboard() {
         </div>
 
       </div>
+
+      {selectedAuto && (
+        <AutoDetalle
+          auto={selectedAuto}
+          onClose={() => setSelectedAuto(null)}
+        />
+      )}
     </div>
   );
 }

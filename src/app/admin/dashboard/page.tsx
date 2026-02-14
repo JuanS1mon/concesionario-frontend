@@ -278,6 +278,58 @@ export default function AdminDashboard() {
               </div>
             </Link>
 
+            <Link href="/admin/pricing" className="block group">
+              <div className="bg-gradient-to-br from-amber-500 to-rose-600 rounded-2xl shadow-xl border border-amber-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-xl font-bold text-white">Pricing</h3>
+                    <p className="text-amber-100 mt-1">Análisis y precios sugeridos</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <div className="text-white font-semibold flex items-center">
+                    Abrir Pricing
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/ventas" className="block group">
+              <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl shadow-xl border border-emerald-200 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m4 4h6a2 2 0 002-2v-6a2 2 0 00-2-2h-2m-4 8v-6a2 2 0 012-2h6" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-xl font-bold text-white">Ventas</h3>
+                    <p className="text-emerald-100 mt-1">Gestión de ventas y estados</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <div className="text-white font-semibold flex items-center">
+                    Abrir Ventas
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
             <Link href="/admin/configuracion-cloudinary" className="block group">
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div className="flex items-center">
