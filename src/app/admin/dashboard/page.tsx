@@ -304,6 +304,34 @@ export default function AdminDashboard() {
               </div>
             </Link>
 
+            <Link href="/admin/configuracion-ia" className="block group">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 2.75a2 2 0 012 0l7 4a2 2 0 011 1.732v8.536a2 2 0 01-1 1.732l-7 4a2 2 0 01-2 0l-7-4a2 2 0 01-1-1.732V8.482a2 2 0 011-1.732l7-4z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 16h6" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">Configurar IA</h3>
+                    <p className="text-gray-600 mt-1">API key para scraping inteligente</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <div className="text-amber-600 group-hover:text-amber-700 font-semibold flex items-center">
+                    Configurar
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
             <Link href="/" className="block group">
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <div className="flex items-center">

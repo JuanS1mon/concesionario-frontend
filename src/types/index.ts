@@ -359,3 +359,13 @@ export interface ActualizarPrecioResponse {
   precio_nuevo: number;
   mensaje: string;
 }
+
+export interface ExcelImportResult {
+  importados: number;
+  duplicados: number;
+  errores: number;
+  filas_sin_datos: number;
+  hojas_procesadas: string[];
+  detalles: string[];
+  mensaje: string;
+}

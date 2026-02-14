@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { PrecioSugerido, EstadisticasPricing, Marca, Modelo } from '@/types';
+import { PrecioSugerido, EstadisticasPricing, Marca, Modelo, ExcelImportResult } from '@/types';
 import { pricingAPI, marcasAPI, modelosAPI } from '@/lib/api';
 import AdminHero from '@/components/AdminHero';
 import {
@@ -17,6 +17,9 @@ import {
   CheckIcon,
   XMarkIcon,
   CurrencyDollarIcon,
+  ArrowUpTrayIcon,
+  DocumentArrowDownIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/solid';
 
 const competitividadConfig: Record<string, { label: string; color: string; bg: string }> = {
@@ -36,8 +39,10 @@ export default function PricingDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [compFilter, setCompFilter] = useState('all');
   const [scraping, setScraping] = useState(false);
+  const [scrapingAI, setScrapingAI] = useState(false);
   const [normalizing, setNormalizing] = useState(false);
   const [scrapingMsg, setScrapingMsg] = useState('');
+  const [scrapingSource, setScrapingSource] = useState('all');
   const [sortField, setSortField] = useState<string>('competitividad');
   const [sortAsc, setSortAsc] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
@@ -45,6 +50,12 @@ export default function PricingDashboard() {
   const [editPrice, setEditPrice] = useState<number>(0);
   const [savingPrice, setSavingPrice] = useState(false);
   const [saveMsg, setSaveMsg] = useState<{ id: number; msg: string; ok: boolean } | null>(null);
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [excelSobrescribir, setExcelSobrescribir] = useState(false);
+  const [excelResult, setExcelResult] = useState<ExcelImportResult | null>(null);
+  const [excelError, setExcelError] = useState('');
+  const [showExcelPanel, setShowExcelPanel] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -86,7 +97,7 @@ export default function PricingDashboard() {
     setScraping(true);
     setScrapingMsg('');
     try {
-      const res = await pricingAPI.ejecutarScraping('all');
+      const res = await pricingAPI.ejecutarScraping(scrapingSource);
       setScrapingMsg(`Scraping: ${res.data.nuevos} nuevos, ${res.data.duplicados} duplicados, ${res.data.errores} errores`);
       loadData();
     } catch (error: any) {
@@ -99,6 +110,26 @@ export default function PricingDashboard() {
       }
     } finally {
       setScraping(false);
+    }
+  };
+
+  const handleScrapingAI = async () => {
+    setScrapingAI(true);
+    setScrapingMsg('');
+    try {
+      const res = await pricingAPI.ejecutarScraping('ai');
+      setScrapingMsg(`Scraping IA: ${res.data.nuevos} nuevos, ${res.data.duplicados} duplicados, ${res.data.errores} errores`);
+      loadData();
+    } catch (error: any) {
+      console.error('Error al ejecutar scraping IA:', error);
+      if (error.response?.status === 401) {
+        setScrapingMsg('Sesión expirada. Redirigiendo al login...');
+        setTimeout(() => router.push('/admin'), 2000);
+      } else {
+        setScrapingMsg(error.response?.data?.detail || 'Error al ejecutar scraping IA');
+      }
+    } finally {
+      setScrapingAI(false);
     }
   };
 
@@ -164,6 +195,49 @@ export default function PricingDashboard() {
       setSavingPrice(false);
     }
   }, [editPrice]);
+
+  const handleExcelUpload = async () => {
+    if (!excelFile) return;
+    setUploading(true);
+    setExcelResult(null);
+    setExcelError('');
+    try {
+      const res = await pricingAPI.importarExcel(excelFile, excelSobrescribir);
+      setExcelResult(res.data);
+      setExcelFile(null);
+      // Reset file input
+      const input = document.getElementById('excel-file-input') as HTMLInputElement;
+      if (input) input.value = '';
+      loadData();
+    } catch (error: any) {
+      console.error('Error al importar Excel:', error);
+      if (error.response?.status === 401) {
+        setExcelError('Sesión expirada. Redirigiendo al login...');
+        setTimeout(() => router.push('/admin'), 2000);
+      } else {
+        setExcelError(error.response?.data?.detail || 'Error al importar el archivo Excel');
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDescargarPlantilla = async () => {
+    try {
+      const res = await pricingAPI.descargarPlantilla();
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'plantilla_datos_mercado.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('Error al descargar plantilla:', error);
+      setExcelError('Error al descargar la plantilla');
+    }
+  };
 
   const filteredAnalisis = useMemo(() => {
     return analisis.filter((item) => {
@@ -266,8 +340,8 @@ export default function PricingDashboard() {
               <div className="text-2xl font-bold">{stats.total_listings_mercado}</div>
               <div className="text-xs text-white/80 mt-1">Listings Mercado</div>
             </div>
-            <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-black p-4 rounded-xl text-center text-white shadow" title={`Fuentes de datos activas: ${stats.fuentes_activas.join(', ') || 'Ninguna'}`}>
-              <div className="text-lg font-bold">{stats.fuentes_activas.length > 0 ? stats.fuentes_activas.join(', ') : '—'}</div>
+            <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-black p-4 rounded-xl text-center text-white shadow cursor-default" title={`Fuentes: ${stats.fuentes_activas.join(', ') || 'Ninguna'}`}>
+              <div className="text-2xl font-bold">{stats.fuentes_activas.length || 0}</div>
               <div className="text-xs text-white/80 mt-1">Fuentes Activas</div>
             </div>
             {stats.margen_promedio && (
@@ -303,6 +377,18 @@ export default function PricingDashboard() {
             <option value="caro">🔴 Caro</option>
             <option value="sin_datos">⚪ Sin datos</option>
           </select>
+          <select
+            title="Fuente de scraping"
+            className="border rounded-lg px-3 py-2 text-sm text-gray-700"
+            value={scrapingSource}
+            onChange={(e) => setScrapingSource(e.target.value)}
+          >
+            <option value="all">Todas las fuentes</option>
+            <option value="mercadolibre">MercadoLibre</option>
+            <option value="kavak">Kavak</option>
+            <option value="deruedas">deRuedas</option>
+            <option value="preciosdeautos">PreciosDeAutos</option>
+          </select>
           <button
             onClick={handleScraping}
             disabled={scraping}
@@ -310,6 +396,18 @@ export default function PricingDashboard() {
           >
             <ArrowPathIcon className={`w-4 h-4 ${scraping ? 'animate-spin' : ''}`} />
             {scraping ? 'Scraping...' : 'Scraping'}
+          </button>
+          <button
+            onClick={handleScrapingAI}
+            disabled={scrapingAI}
+            className="flex items-center gap-1 px-3 py-2 bg-violet-600 text-white rounded-lg text-sm hover:bg-violet-700 disabled:opacity-50"
+          >
+            {scrapingAI ? (
+              <ArrowPathIcon className="w-4 h-4 animate-spin" />
+            ) : (
+              <SparklesIcon className="w-4 h-4" />
+            )}
+            {scrapingAI ? 'IA...' : 'Scraping IA'}
           </button>
           <button
             onClick={handleNormalizacion}
@@ -333,7 +431,141 @@ export default function PricingDashboard() {
             <QuestionMarkCircleIcon className="w-4 h-4" />
             Ayuda
           </button>
+          <button
+            onClick={() => setShowExcelPanel(!showExcelPanel)}
+            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm border transition ${showExcelPanel ? 'bg-green-50 border-green-300 text-green-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+            title="Importar datos desde Excel"
+          >
+            <ArrowUpTrayIcon className="w-4 h-4" />
+            Importar Excel
+          </button>
         </div>
+
+        {/* Excel Import Panel */}
+        {showExcelPanel && (
+          <div className="mb-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-lg font-bold text-green-900 flex items-center gap-2">
+                <ArrowUpTrayIcon className="w-5 h-5" />
+                Importar Datos desde Excel
+              </h3>
+              <button onClick={() => setShowExcelPanel(false)} className="text-gray-400 hover:text-gray-600" title="Cerrar">
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Upload area */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4 border border-green-100 shadow-sm">
+                  <label htmlFor="excel-file-input" className="block text-sm font-medium text-gray-700 mb-2">
+                    Archivo Excel (.xlsx)
+                  </label>
+                  <input
+                    id="excel-file-input"
+                    type="file"
+                    accept=".xlsx"
+                    onChange={(e) => {
+                      setExcelFile(e.target.files?.[0] || null);
+                      setExcelResult(null);
+                      setExcelError('');
+                    }}
+                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 file:cursor-pointer cursor-pointer"
+                  />
+                  {excelFile && (
+                    <p className="mt-2 text-xs text-gray-500">
+                      📄 {excelFile.name} ({(excelFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={excelSobrescribir}
+                      onChange={(e) => setExcelSobrescribir(e.target.checked)}
+                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      title="Sobrescribir datos existentes de fuente Excel"
+                    />
+                    <span className="text-sm text-gray-700">Sobrescribir datos existentes de Excel</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleExcelUpload}
+                    disabled={!excelFile || uploading}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ArrowUpTrayIcon className={`w-4 h-4 ${uploading ? 'animate-bounce' : ''}`} />
+                    {uploading ? 'Importando...' : 'Subir e Importar'}
+                  </button>
+                  <button
+                    onClick={handleDescargarPlantilla}
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-green-700 border border-green-300 rounded-lg text-sm font-medium hover:bg-green-50 transition"
+                  >
+                    <DocumentArrowDownIcon className="w-4 h-4" />
+                    Descargar Plantilla
+                  </button>
+                </div>
+              </div>
+
+              {/* Info / Results area */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4 border border-green-100 shadow-sm">
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Formato esperado</h4>
+                  <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                    <li><strong>Hoja &quot;Datos de Mercado&quot;</strong>: Marca, Modelo, Año, Precio, Km, Ubicación</li>
+                    <li><strong>Hoja &quot;Precios de Referencia&quot;</strong>: Marca, Modelo, Año, Precio Mínimo, Precio Máximo</li>
+                    <li>Podés usar una o ambas hojas</li>
+                    <li>Descargá la plantilla para ver el formato exacto</li>
+                  </ul>
+                </div>
+
+                {/* Excel import result */}
+                {excelResult && (
+                  <div className="bg-white rounded-lg p-4 border border-green-200 shadow-sm">
+                    <h4 className="text-sm font-semibold text-green-800 mb-2 flex items-center gap-1">
+                      <CheckIcon className="w-4 h-4" />
+                      Resultado de importación
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="bg-green-50 rounded p-2 text-center">
+                        <div className="text-lg font-bold text-green-700">{excelResult.importados}</div>
+                        <div className="text-xs text-green-600">Importados</div>
+                      </div>
+                      <div className="bg-yellow-50 rounded p-2 text-center">
+                        <div className="text-lg font-bold text-yellow-700">{excelResult.duplicados}</div>
+                        <div className="text-xs text-yellow-600">Duplicados</div>
+                      </div>
+                      <div className="bg-red-50 rounded p-2 text-center">
+                        <div className="text-lg font-bold text-red-700">{excelResult.errores}</div>
+                        <div className="text-xs text-red-600">Errores</div>
+                      </div>
+                      <div className="bg-gray-50 rounded p-2 text-center">
+                        <div className="text-lg font-bold text-gray-700">{excelResult.filas_sin_datos}</div>
+                        <div className="text-xs text-gray-600">Sin datos</div>
+                      </div>
+                    </div>
+                    {excelResult.hojas_procesadas.length > 0 && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        Hojas: {excelResult.hojas_procesadas.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Excel error */}
+                {excelError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                    {excelError}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Help Panel */}
         {showHelp && (

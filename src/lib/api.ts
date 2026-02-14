@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate, PrecioSugerido, SimulacionPrecio, EstadisticasPricing, MarketListing, ScrapingResult, NormalizacionResult, ActualizarPrecioResponse } from '@/types';
+import { FiltrosAutos, Auto, Marca, Modelo, Estado, Cotizacion, Presupuesto, SolicitudVenta, Cliente, Oportunidad, Venta, VentaCreate, PrecioSugerido, SimulacionPrecio, EstadisticasPricing, MarketListing, ScrapingResult, NormalizacionResult, ActualizarPrecioResponse, ExcelImportResult } from '@/types';
 import { API_BASE_URL } from './constants';
 
 export const api = axios.create({
@@ -153,4 +153,21 @@ export const pricingAPI = {
   ejecutarNormalizacion: () => api.post<NormalizacionResult>('/pricing/normalizar'),
   actualizarPrecio: (autoId: number, precio: number) =>
     api.patch<ActualizarPrecioResponse>(`/pricing/actualizar-precio/${autoId}`, { precio }),
+  importarExcel: (file: File, sobrescribir?: boolean, normalizar?: boolean) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<ExcelImportResult>('/pricing/importar-excel', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: { sobrescribir: sobrescribir || false, normalizar: normalizar !== false },
+    });
+  },
+  descargarPlantilla: () =>
+    api.get('/pricing/plantilla-excel', { responseType: 'blob' }),
+};
+
+export const aiConfigAPI = {
+  get: () => api.get('/configuracion-ai'),
+  create: (data: { proveedor: string; api_key: string; activo?: boolean }) => api.post('/configuracion-ai', data),
+  update: (id: number, data: { proveedor?: string; api_key?: string; activo?: boolean }) => api.put(`/configuracion-ai/${id}`, data),
+  delete: (id: number) => api.delete(`/configuracion-ai/${id}`),
 };
