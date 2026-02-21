@@ -1,8 +1,10 @@
-'use client';
+ 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
+import { useInView } from 'framer-motion';
 import Image from 'next/image';
 import { Auto } from '@/types';
+import { imagenesAPI } from '@/lib/api';
 
 interface CarCardProps {
   auto: Auto;
@@ -15,37 +17,59 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [images, setImages] = useState(auto.imagenes || []);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: '-50px' });
 
   // Carousel automático solo cuando hay hover
   useEffect(() => {
-    if (!isHovered || !auto.imagenes || auto.imagenes.length <= 1) {
+    if (!isHovered || !images || images.length <= 1) {
       return;
     }
 
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) =>
-        prevIndex === auto.imagenes.length - 1 ? 0 : prevIndex + 1
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
       );
     }, 8000);
 
     return () => clearInterval(interval);
-  }, [auto.imagenes, isHovered]);
+  }, [images, isHovered]);
 
   const nextImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-      prevIndex === auto.imagenes.length - 1 ? 0 : prevIndex + 1
-    );
+    setCurrentImageIndex((prevIndex) => {
+      const len = images && images.length ? images.length : (auto.imagenes?.length || 1);
+      return prevIndex === len - 1 ? 0 : prevIndex + 1;
+    });
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? auto.imagenes.length - 1 : prevIndex - 1
-    );
+    setCurrentImageIndex((prevIndex) => {
+      const len = images && images.length ? images.length : (auto.imagenes?.length || 1);
+      return prevIndex === 0 ? len - 1 : prevIndex - 1;
+    });
   };
 
   const goToImage = (index: number) => {
     setCurrentImageIndex(index);
   };
+
+  // Fetch images for this auto when the card becomes visible
+  useEffect(() => {
+    let mounted = true;
+    const loadImages = async () => {
+      if ((images && images.length > 0) || !inView) return;
+      try {
+        const resp = await imagenesAPI.getByAuto(auto.id);
+        if (!mounted) return;
+        setImages(resp.data || []);
+      } catch (err) {
+        // ignore
+      }
+    };
+    loadImages();
+    return () => { mounted = false; };
+  }, [inView, auto.id, images]);
 
   const buildCloudinaryUrl = (url: string, options: { width?: number; quality?: number }) => {
     if (!url.includes('cloudinary.com') || !url.includes('/upload/')) {
@@ -64,14 +88,15 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
     return url.replace('/upload/', `/upload/${transforms.join(',')}/`);
   };
 
-  const imagenActual = auto.imagenes?.[currentImageIndex] || auto.imagenes?.[0];
+  const imagenActual = images?.[currentImageIndex] || images?.[0] || auto.imagenes?.[currentImageIndex] || auto.imagenes?.[0];
   const imagenPrincipal = imagenActual 
-    ? buildCloudinaryUrl(imagenActual.url, { width: 600, quality: 60 }) 
+    ? buildCloudinaryUrl(imagenActual.url, { width: 480, quality: 60 }) 
     : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%239ca3af"%3ESin Imagen%3C/text%3E%3C/svg%3E';
 
   return (
     <div
       className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 group"
+      ref={ref}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -95,7 +120,7 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
         />
 
         {/* Controles de navegación invisibles */}
-        {auto.imagenes && auto.imagenes.length > 1 && (
+        {images && images.length > 1 && (
           <>
             <div
               className="absolute left-0 top-0 w-1/2 h-full cursor-pointer z-10"
@@ -120,9 +145,9 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
         {/* Indicadores de imagen si hay múltiples */}
-        {auto.imagenes && auto.imagenes.length > 1 && (
+            {images && images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-            {auto.imagenes.map((_, index) => (
+            {(images || auto.imagenes || []).map((_, index) => (
               <button
                 key={index}
                 onClick={(e) => {
@@ -223,3 +248,6 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
 });
 
 export default CarCard;
+
+// Lazy-load images when card enters viewport
+CarCard.displayName = 'CarCard';

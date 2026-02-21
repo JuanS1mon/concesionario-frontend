@@ -30,59 +30,35 @@ export default function Home() {
     setPage(1);
   }, [debouncedFiltros]);
 
-  const autosKey = useMemo(() => ['autos-all'], []);
+  const autosKey = useMemo(
+    () => ['autos-paginated', page, debouncedFiltros, sortBy, sortOrder],
+    [page, debouncedFiltros, sortBy, sortOrder]
+  );
 
-  const { data: allAutos, error, isLoading, isValidating, mutate } = useSWR<Auto[]>(
+  const { data: paginated, error, isLoading, isValidating, mutate } = useSWR<PaginatedAutos>(
     autosKey,
-    () => autosAPI.getAll({}).then((response) => response.data),
+    () =>
+        autosAPI
+        .getPaginated({
+          skip: (page - 1) * pageSize,
+          limit: pageSize,
+          ...debouncedFiltros,
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          include_images: false,
+        })
+        .then((r) => r.data),
     {
       revalidateOnFocus: false,
       keepPreviousData: true,
     }
   );
 
-  const filteredAndSortedAutos = useMemo(() => {
-    if (!allAutos) return [];
-
-    let filtered = allAutos.filter((auto) => {
-      if (debouncedFiltros.marca_id && auto.marca_id !== debouncedFiltros.marca_id) return false;
-      if (debouncedFiltros.modelo_id && auto.modelo_id !== debouncedFiltros.modelo_id) return false;
-      if (debouncedFiltros.anio_min && auto.anio < debouncedFiltros.anio_min) return false;
-      if (debouncedFiltros.anio_max && auto.anio > debouncedFiltros.anio_max) return false;
-      if (debouncedFiltros.tipo && auto.tipo !== debouncedFiltros.tipo) return false;
-      if (debouncedFiltros.precio_min && auto.precio < debouncedFiltros.precio_min) return false;
-      if (debouncedFiltros.precio_max && auto.precio > debouncedFiltros.precio_max) return false;
-      if (debouncedFiltros.en_stock !== undefined && auto.en_stock !== debouncedFiltros.en_stock) return false;
-      return true;
-    });
-
-    // Ordenar
-    filtered.sort((a, b) => {
-      let aVal, bVal;
-      if (sortBy === 'precio') {
-        aVal = a.precio;
-        bVal = b.precio;
-      } else {
-        aVal = a.anio;
-        bVal = b.anio;
-      }
-      if (sortOrder === 'asc') {
-        return aVal - bVal;
-      } else {
-        return bVal - aVal;
-      }
-    });
-
-    return filtered;
-  }, [allAutos, debouncedFiltros, sortBy, sortOrder]);
-
-  const totalAutos = filteredAndSortedAutos.length;
+  const autosData = paginated?.items || [];
+  const totalAutos = paginated?.total || 0;
   const totalPages = Math.max(1, Math.ceil(totalAutos / pageSize));
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const autosData = filteredAndSortedAutos.slice(startIndex, endIndex);
 
-  const isInitialLoading = !allAutos && isLoading;
+  const isInitialLoading = !paginated && isLoading;
   const errorMessage = error ? 'Error al cargar los autos' : null;
 
   const handleAutoClick = (auto: Auto) => {
@@ -170,12 +146,20 @@ export default function Home() {
             </div>
 
             {isInitialLoading && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-red-200 rounded-full animate-spin"></div>
-                  <div className="absolute top-0 left-0 w-16 h-16 border-4 border-red-600 rounded-full animate-spin border-t-transparent"></div>
-                </div>
-                <p className="mt-4 text-gray-600 font-medium">Cargando vehículos premium...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {Array.from({ length: pageSize }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden animate-pulse">
+                    <div className="h-56 bg-gray-200" />
+                    <div className="p-6">
+                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-3" />
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-full mb-4" />
+                      <div className="flex justify-end items-center pt-4 border-t border-gray-100">
+                        <div className="h-8 bg-gray-200 rounded w-24" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -196,7 +180,7 @@ export default function Home() {
               </div>
             )}
 
-            {isValidating && !allAutos && autosData.length > 0 && (
+            {isValidating && !paginated && autosData.length > 0 && (
               <div className="mb-6 text-sm text-gray-500">
                 Cargando lista...
               </div>

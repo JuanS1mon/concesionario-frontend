@@ -54,9 +54,14 @@ export default function LandingPage() {
                 >
                   Demo
                 </Link>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg">
+                <a
+                  href="https://wa.me/5491159002769?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20ConcesionariosCloud."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
                   Solicitar Acceso
-                </button>
+                </a>
               </div>
               {/* Mobile menu button */}
               <div className="md:hidden">
@@ -87,12 +92,15 @@ export default function LandingPage() {
                 >
                   Demo
                 </Link>
-                <button
-                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium text-left w-full"
+                <a
+                  href="https://wa.me/5491159002769?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20ConcesionariosCloud."
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setIsMenuOpen(false)}
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium text-left w-full"
                 >
                   Solicitar Acceso
-                </button>
+                </a>
               </div>
             </div>
           )}
@@ -143,9 +151,14 @@ export default function LandingPage() {
             >
               Ver Demo
             </Link>
-            <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 md:px-8 py-3 rounded-lg font-medium text-base md:text-lg transition-all duration-200 shadow-lg">
+            <a
+              href="https://wa.me/5491159002769?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20ConcesionariosCloud."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 md:px-8 py-3 rounded-lg font-medium text-base md:text-lg transition-all duration-200 shadow-lg"
+            >
               Solicitar Acceso
-            </button>
+            </a>
           </motion.div>
        
         </div>

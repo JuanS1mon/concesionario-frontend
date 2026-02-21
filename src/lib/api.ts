@@ -171,3 +171,8 @@ export const aiConfigAPI = {
   update: (id: number, data: { proveedor?: string; api_key?: string; activo?: boolean }) => api.put(`/configuracion-ai/${id}`, data),
   delete: (id: number) => api.delete(`/configuracion-ai/${id}`),
 };
+
+// Funciones de API para imágenes
+export const imagenesAPI = {
+  getByAuto: (autoId: number) => api.get(`/imagenes/auto/${autoId}`),
+};
