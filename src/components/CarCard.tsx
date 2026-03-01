@@ -88,10 +88,16 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
     return url.replace('/upload/', `/upload/${transforms.join(',')}/`);
   };
 
+  const [fallback, setFallback] = useState(false);
   const imagenActual = images?.[currentImageIndex] || images?.[0] || auto.imagenes?.[currentImageIndex] || auto.imagenes?.[0];
-  const imagenPrincipal = imagenActual 
-    ? buildCloudinaryUrl(imagenActual.url, { width: 480, quality: 60 }) 
-    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%239ca3af"%3ESin Imagen%3C/text%3E%3C/svg%3E';
+  // Validar si la URL es de imagen
+  function esImagen(url?: string) {
+    if (!url) return false;
+    return /\.(jpg|jpeg|png|webp|gif)$/i.test(url.split('?')[0]);
+  }
+  const imagenPrincipal = fallback || !esImagen(imagenActual?.url)
+    ? 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%239ca3af"%3ESin Imagen%3C/text%3E%3C/svg%3E'
+    : buildCloudinaryUrl(imagenActual.url, { width: 480, quality: 60 });
 
   return (
     <div
@@ -115,7 +121,7 @@ const CarCard = memo(function CarCard({ auto, onClick, onEdit, onDelete }: CarCa
           className="object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
           onClick={onClick}
           onLoad={() => setIsImageLoaded(true)}
-          onError={() => setIsImageLoaded(true)}
+          onError={() => { setIsImageLoaded(true); setFallback(true); }}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
 

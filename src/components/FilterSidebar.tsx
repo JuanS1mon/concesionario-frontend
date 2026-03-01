@@ -132,6 +132,7 @@ const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, on
           <option value="SUV">SUV</option>
           <option value="Hatchback">Hatchback</option>
           <option value="Pickup">Pickup</option>
+          <option value="4x4">4x4</option>
           <option value="Coupe">Coupe</option>
           <option value="Convertible">Convertible</option>
         </select>
@@ -160,18 +161,7 @@ const FilterSidebar = memo(function FilterSidebar({ filtros, onFiltrosChange, on
         </div>
       </div>
 
-      {/* Stock */}
-      <div className="mb-4">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={filtros.en_stock ?? true}
-            onChange={(e) => updateFiltro('en_stock', e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="ml-2 text-sm text-gray-700">Solo en stock</span>
-        </label>
-      </div>
+      {/* Stock eliminado para compara-precios */}
 
       {/* Botón limpiar */}
       <button

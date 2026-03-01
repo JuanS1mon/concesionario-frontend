@@ -38,7 +38,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900">
       {/* Navbar */}
       <nav className="bg-gray-900 shadow-lg border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 container">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -53,6 +53,12 @@ export default function LandingPage() {
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                 >
                   Demo
+                </Link>
+                <Link
+                  href="/compara-precios"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                >
+                  Compara Precios
                 </Link>
                 <a
                   href="https://wa.me/5491159002769?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20ConcesionariosCloud."
@@ -92,6 +98,13 @@ export default function LandingPage() {
                 >
                   Demo
                 </Link>
+                <Link
+                  href="/compara-precios"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Compara Precios
+                </Link>
                 <a
                   href="https://wa.me/5491159002769?text=Hola%2C%20quiero%20solicitar%20acceso%20a%20ConcesionariosCloud."
                   target="_blank"
@@ -114,7 +127,7 @@ export default function LandingPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 container">
           <motion.h1 
             className="text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-6 tracking-tight"
             initial={{ opacity: 0, y: 30 }}
@@ -166,7 +179,7 @@ export default function LandingPage() {
    <div className="h-1 bg-gradient-to-r from-blue-600 via-red-600 to-blue-600"></div>
       {/* PROBLEMA */}
       <section className="py-16 bg-gray-900 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 container">
           <h2 className="text-3xl font-bold text-white mb-6 tracking-tight">Cómo funciona hoy</h2>
           <p className="text-lg text-gray-300 leading-relaxed">
             Inventario, clientes y precios suelen gestionarse en sistemas separados.<br />
@@ -177,7 +190,7 @@ export default function LandingPage() {
 
       {/* FEATURES */}
       <section ref={featuresRef} className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 container">
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 30 }}
@@ -344,7 +357,7 @@ export default function LandingPage() {
           </svg>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 container">
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 30 }}
