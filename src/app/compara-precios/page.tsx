@@ -22,6 +22,11 @@ import Navbar from "@/components/Navbar";
 import FilterSidebar from "@/components/FilterSidebar";
 import { MarketListing, FiltrosAutos } from "@/types";
 
+type MarketIAResponse = {
+  sugerencia: string;
+  candidates: MarketListing[];
+};
+
 
 export default function ComparaPreciosPage() {
   const [filtros, setFiltros] = useState<FiltrosAutos>({});
@@ -43,7 +48,7 @@ export default function ComparaPreciosPage() {
   }, [aplicarFiltros]);
 
   const endpoint = usarIA ? `/api/market/ai_sugerir?${params}` : `/api/market/search?${params}`;
-  const { data: marketData, error, isLoading, mutate } = useSWR<MarketListing[]>(
+  const { data: marketData, error, isLoading, mutate } = useSWR<MarketListing[] | MarketIAResponse>(
     aplicarFiltros && Object.keys(aplicarFiltros).length > 0 ? endpoint : null,
     (url: string) => fetch(url).then(r => r.json()),
     { revalidateOnFocus: false }
